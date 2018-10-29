@@ -37,14 +37,7 @@ Run the program with `node zerochat.js`. If that doesn't work try `nodejs zeroch
 
 
 ## Upcoming features
-- Add a command line arguments, including:
-	- Setting listening port via a `-p` flag
-	- Enabling logging verbosity with `-v` flag and setting logging off by default
-- Add a rolling identification key for posting, so that if the viewing key is compromised on the user's end, nobody can pretend to be them with an old key
-- Admin accounts able to kick users or ban per IP
-- Private messaging between users
-- Frequencies/Channels that users can tune into for private group chats
-- Use sandboxed iframes.
+Check the [Issue Tracker](https://github.com/rslay/ZeroChat/issues).
 
 
 ## How it works
