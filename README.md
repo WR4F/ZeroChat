@@ -1,0 +1,57 @@
+# ZeroChat
+A live web chat. No javascript, cookies, accounts, or periodic refreshing with Meta-Refresh.
+
+Easy to run, simple to use. Developed with a security-first mentality.
+
+
+## Dependencies
+
+This project requires NodeJS, unless you download one of the [releases]().
+
+
+### Windows
+Take a look at the [Releases]() for executable binaries if you just want to run the chat server.
+
+If you want to run the source NodeJS file and tweak it, you can go to [nodejs.org](https://nodejs.org) to install NodeJS, and then follow along with **Installation & Usage** below.
+
+
+### Mac/Linux
+Run the following to install the wonderful **[n](https://github.com/tj/n)** NodeJS version manager, and then install NodeJS v11.0.0:
+```
+curl -L https://git.io/n-install | bash
+n 11.0.0
+nodejs --version || node --version
+npm --version
+```
+**If you see something along the lines of `command not found: nodejs`**, _this is normal_, it means you have NodeJS installed as a command line tool `node`.
+
+
+## Installation & Usage
+Download ZeroChat, go into the folder it's in locally, and install all NodeJS libraries it needs to run:
+```
+git clone https://github.com/rslay/ZeroChat zerochat
+cd zerochat
+npm install
+```
+Run the program with `node zerochat.js`. If that doesn't work try `nodejs zerochat.js`
+
+
+## Upcoming features
+- Add a command line arguments, including:
+	- Setting listening port via a `-p` flag
+	- Enabling logging verbosity with `-v` flag and setting logging off by default
+- Add a rolling identification key for posting, so that if the viewing key is compromised on the user's end, nobody can pretend to be them with an old key
+- Admin accounts able to kick users or ban per IP
+- Private messaging between users
+- Frequencies/Channels that users can tune into for private group chats
+- use sandboxed iframes.
+
+
+## How it works
+Data is streamed from the webserver, which is a NodeJS app, and the live updating of the page is achieved by keeping the HTTP connection open and never terminating the connection between the server and browser.
+
+As messages are sent to the server, the visitors of the site recieve HTML code containing the sender and their message.
+
+All authentification is done by passing keys into the GET and POST of the user's requests on the pages and iframes they load, which in turn pass the keys to the next page that they load.
+
+By doing this, the server can check every page a user loads per their key, and keep track of what messages to send to who.
