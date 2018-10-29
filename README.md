@@ -1,5 +1,5 @@
 # ZeroChat
-A live web chat. No javascript, cookies, accounts, or periodic refreshing with Meta-Refresh.
+A live web chat. No client-side javascript, cookies, accounts, or periodic refreshing with Meta-Refresh.
 
 Easy to run, simple to use. Developed with a security-first mentality.
 
