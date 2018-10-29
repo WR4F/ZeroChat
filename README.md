@@ -1,16 +1,16 @@
 # ZeroChat
-A live web chat. No javascript, cookies, accounts, or periodic refreshing with Meta-Refresh.
+A live web chat. No client-side javascript, cookies, accounts, or periodic refreshing with Meta-Refresh.
 
 Easy to run, simple to use. Developed with a security-first mentality.
 
 
 ## Dependencies
 
-This project requires NodeJS, unless you download one of the [releases]().
+This project requires NodeJS, unless you download one of the [releases](https://github.com/rslay/ZeroChat/releases).
 
 
 ### Windows
-Take a look at the [Releases]() for executable binaries if you just want to run the chat server.
+Take a look at the [Releases](https://github.com/rslay/ZeroChat/releases) for executable binaries if you just want to run the chat server.
 
 If you want to run the source NodeJS file and tweak it, you can go to [nodejs.org](https://nodejs.org) to install NodeJS, and then follow along with **Installation & Usage** below.
 
