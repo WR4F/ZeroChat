@@ -44,7 +44,7 @@ Run the program with `node zerochat.js`. If that doesn't work try `nodejs zeroch
 - Admin accounts able to kick users or ban per IP
 - Private messaging between users
 - Frequencies/Channels that users can tune into for private group chats
-- use sandboxed iframes.
+- Use sandboxed iframes.
 
 
 ## How it works
