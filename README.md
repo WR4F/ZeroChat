@@ -4,7 +4,7 @@ A live web chat. No client-side javascript, cookies, accounts, or periodic refre
 Easy to run, simple to use. Developed with a security-first mentality.
 
 
-## Dependencies
+## Running & Dependencies
 
 This project requires NodeJS, unless you download one of the [releases](https://github.com/rslay/ZeroChat/releases).
 
