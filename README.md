@@ -9,13 +9,13 @@ Easy to run, simple to use. Developed with a security-first mentality.
 This project requires NodeJS, unless you download one of the [releases](https://github.com/rslay/ZeroChat/releases).
 
 
-### Windows
+### Running ZeroChat on Windows
 Take a look at the [Releases](https://github.com/rslay/ZeroChat/releases) for executable binaries if you just want to run the chat server.
 
 If you want to run the source NodeJS file and tweak it, you can go to [nodejs.org](https://nodejs.org) to install NodeJS, and then follow along with **Installation & Usage** below.
 
 
-### Mac/Linux
+### Running ZeroChat on Mac/Linux
 Run the following to install the wonderful **[n](https://github.com/tj/n)** NodeJS version manager, and then install NodeJS v11.0.0:
 ```
 curl -L https://git.io/n-install | bash
