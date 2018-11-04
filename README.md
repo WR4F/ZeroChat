@@ -23,7 +23,7 @@ n 11.0.0
 nodejs --version || node --version
 npm --version
 ```
-**If you see something along the lines of `command not found: nodejs`**, _this is normal_, it means you have NodeJS installed as a command line tool `node`.
+**If you see something along the lines of `command not found: nodejs`**, _this is normal_, it means you have NodeJS installed as a command line tool **`node`**, rather than as `nodejs`.
 
 
 ## Installation & Usage
