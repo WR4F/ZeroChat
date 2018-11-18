@@ -1,6 +1,9 @@
 # ZeroChat [![Build Status](https://travis-ci.org/rslay/ZeroChat.svg?branch=master)](https://travis-ci.org/rslay/ZeroChat) [![Maintainability](https://api.codeclimate.com/v1/badges/84bdf069784f80804e43/maintainability)](https://codeclimate.com/github/rslay/ZeroChat/maintainability)
 A live web chat. No client-side javascript, cookies, accounts, or Meta-Refreshing.
 
+Instead, your browser never finishes loading the whole page, and downloads messages in parts.
+Authentification is done with a password/tripcode system using PBKDF2 and 
+
 Easy to run, simple to use. Developed with a security-first mentality.
 
 
@@ -41,10 +44,10 @@ Check the [Issue Tracker](https://github.com/rslay/ZeroChat/issues).
 
 
 ## How it works
-Data is streamed from the webserver, which is a NodeJS app, and the live updating of the page is achieved by keeping the HTTP connection open and never terminating the connection between the server and browser.
+Data is streamed from the webserver, which is a NodeJS app, and the live updating of the page is achieved by keeping the HTTP connection open and never terminating the TCP session between the server and browser.
 
 As messages are sent to the server, the visitors of the site recieve HTML code containing the sender and their message.
 
 All authentification is done by passing keys into the GET and POST of the user's requests on the pages and iframes they load, which in turn pass the keys to the next page that they load.
 
-By doing this, the server can check every page a user loads per their key, and keep track of what messages to send to who.
+By doing this, the server can check every page a user loads per their key, and keep track of what messages to send and to who.
