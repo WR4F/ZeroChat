@@ -1,4 +1,4 @@
-# ZeroChat [![Build Status](https://travis-ci.org/rslay/ZeroChat.svg?branch=master)](https://travis-ci.org/rslay/ZeroChat)
+# ZeroChat [![Build Status](https://travis-ci.org/rslay/ZeroChat.svg?branch=master)](https://travis-ci.org/rslay/ZeroChat) [![Maintainability](https://api.codeclimate.com/v1/badges/84bdf069784f80804e43/maintainability)](https://codeclimate.com/github/rslay/ZeroChat/maintainability)
 A live web chat. No client-side javascript, cookies, accounts, or periodic refreshing with Meta-Refresh.
 
 Easy to run, simple to use. Developed with a security-first mentality.
