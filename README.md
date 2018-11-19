@@ -1,5 +1,5 @@
 # ZeroChat [![Build Status](https://travis-ci.org/rslay/ZeroChat.svg?branch=master)](https://travis-ci.org/rslay/ZeroChat) [![Maintainability](https://api.codeclimate.com/v1/badges/84bdf069784f80804e43/maintainability)](https://codeclimate.com/github/rslay/ZeroChat/maintainability)
-A live web chat. No client-side javascript, cookies, accounts, or Meta-Refreshing.
+A live web chat. No client-side javascript, cookies, accounts, or `<meta http-equiv="refresh">` tags.
 
 Instead, your browser never finishes loading the whole page, and downloads messages in parts.
 Authentification is done with a password/tripcode system using PBKDF2 and 
