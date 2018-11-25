@@ -1,0 +1,29 @@
+{
+  "name": "zerochat",
+  "version": "0.1.1",
+  "description": "Live web chat. No scripts, cookies, accounts, or <meta> refreshing.",
+  "main": "zerochat.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rslay/ZeroChat.git"
+  },
+  "keywords": [
+    "noscript",
+    "chat",
+    "nodejs",
+    "secure",
+    "private"
+  ],
+  "author": "rslay",
+  "license": "SEE LICENSE IN README.md",
+  "bugs": {
+    "url": "https://github.com/rslay/ZeroChat/issues"
+  },
+  "homepage": "https://github.com/rslay/ZeroChat#readme",
+  "dependencies": {
+    "express": "^4.16.4"
+  }
+}

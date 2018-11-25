@@ -1,6 +1,7 @@
 const http = require('http')
-var qs = require('querystring')
-var crypto = require('crypto')
+const express = require('express');
+const qs = require('querystring')
+const crypto = require('crypto')
 
 const PORT = 8080
 const HTMLHEADERS = {
