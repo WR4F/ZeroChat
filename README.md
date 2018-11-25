@@ -13,9 +13,9 @@ This project requires NodeJS, unless you download one of the [releases](https://
 
 
 ### Running ZeroChat on Windows
-Take a look at the [Releases](https://github.com/rslay/ZeroChat/releases) for executable binaries if you just want to run the chat server.
+Take a look at the [releases](https://github.com/rslay/ZeroChat/releases) for executable binaries if you just want to run the chat server.
 
-If you want to run the source NodeJS file and tweak it, you can go to [nodejs.org](https://nodejs.org) to install NodeJS, and then follow along with **Installation & Usage** below.
+If you want to run the source NodeJS file and tweak it, you can go to [NodeJS.org](https://nodejs.org) to install NodeJS, and then follow along with [Installation & Usage](https://github.com/rslay/ZeroChat#installation--usage).
 
 
 ### Running ZeroChat on Mac/Linux
@@ -30,13 +30,13 @@ npm --version
 
 
 ## Installation & Usage
-Download ZeroChat, go into the folder it's in locally, and install all NodeJS libraries it needs to run:
+Run the following commands to download ZeroChat (Windows computers will need [git](https://git-scm.com/download/win) installed), go into the folder it's in locally, and install all NodeJS libraries it needs to run:
 ```
 git clone https://github.com/rslay/ZeroChat zerochat
 cd zerochat
 npm install
 ```
-Run the program with `node zerochat.js`. If that doesn't work try `nodejs zerochat.js`
+Run the program with `node zerochat.js`. If that doesn't work try `nodejs zerochat.js`.
 
 
 ## Upcoming features
