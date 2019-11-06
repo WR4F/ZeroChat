@@ -1,0 +1,99 @@
+*{
+	font-family:sans-serif;
+	border:3px solid black;
+	margin:25px;
+	font-size:20px;
+}
+body,html,input,textarea,select{
+	background:initial;
+	color:black;
+}
+body, html {
+	background-color: aliceblue;
+	margin:25px;
+}
+iframe {
+	height: 265px;
+	border: 3px solid limegreen;
+	margin: 25px;
+	width: calc(100% - 56px);
+}
+div{
+	border-color:slategray;
+}
+
+form{
+	border-color:orange;
+}
+
+input,textarea,select{
+	-moz-appearance: none;
+	-webkit-appearance: none;
+	appearance: none;
+	background-color: #fafafa;
+	border: 2px solid #cacece;
+	box-shadow: 0 1px 2px rgba(0,0,0,0.05), inset 0px -15px 10px -12px rgba(0,0,0,0.05);
+	padding: 9px;
+	border-radius: 3px;
+	display: inline-block;
+	position: relative;
+	border-color:salmon;
+	margin: 25px;
+}
+
+select{
+	background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' version='1.1' height='15px' width='10px'%3E%3Ctext x='-4' y='13' fill='gray'%3E%E2%96%BE%3C/text%3E%3C/svg%3E");
+	background-repeat: no-repeat;
+	background-size: 1EM 1EM;
+	background-position: right center;
+	padding-right: 25px;
+}
+
+input[type="password"]{
+	border-color:crimson;
+}
+
+input[type=checkbox]:checked{
+	border-color:crimson;
+}
+
+input[type=checkbox]:checked:after {
+	content: '\\2714';
+	font-size: 18px;
+	overflow:visible;
+	position: absolute;
+	top: -3px;
+	left: 2px;
+	right: auto;
+	padding: 5px;
+	color: #555;
+}
+
+input[type=submit]{
+	cursor:pointer;
+}
+#settings{
+	position: absolute;
+	right: auto;
+	top: 0px;
+	left: 0px;
+	background-color:snow;
+	padding: 5px;
+}
+#messagebox{
+	width: 600px;
+	float: left;
+}
+#settings_options {
+	width: 700px;
+	height: 600px;
+}
+.handle{
+	color: #222
+}
+.self > .handle{
+	color: salmon
+}
+*:focus{
+	background-color:#eee;
+}
