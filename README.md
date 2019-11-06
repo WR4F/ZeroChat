@@ -21,7 +21,7 @@ If you want to run the source NodeJS file and tweak it, you can go to [NodeJS.or
 
 If you have `node` installed, then skip to the section on [Installation & Usage](README.md#installation--usage), otherwise, read the section below.
 
-## Prerequisites: Setting up `node` and `npm
+## Prerequisites: Setting up `node` and `npm`
 
 Run the following to install the wonderful **[n](https://github.com/tj/n)** NodeJS version manager, and then install NodeJS v12.0.0:
 
