@@ -9,6 +9,6 @@
     "debug": "~2.6.9",
     "ejs": "~2.6.1",
     "express": "~4.17",
-    "http-errors": "~1.6.3"
+    "http-errors": "~1.7.3"
   }
 }
