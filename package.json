@@ -6,7 +6,7 @@
     "start": "node ./bin/www"
   },
   "dependencies": {
-    "debug": "~2.6.9",
+    "debug": "~4.1.1",
     "ejs": "~2.6.1",
     "express": "~4.17",
     "http-errors": "~1.6.3"
