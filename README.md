@@ -5,7 +5,11 @@ A live web chat. No client-side javascript, cookies, accounts, or `<meta http-eq
 Instead, your browser never finishes loading the whole page, and downloads messages as they are posted by others.
 Authentification is done with a password/tripcode system using PBKDF2 hashes.
 
-Easy to run, simple to use. Developed with a security-first mentality.
+## Try it online!
+
+<a href="https://chat.justhack.in"><img src="https://raw.githubusercontent.com/rslay/ZeroChat/master/image.png" title="Preview of chat login page" style="width: 200px;height: 150px"/></a>
+
+**It's easy to self-host, and simple to use.** Developed with a security-first mentality.
 
 ## Running & Dependencies
 
