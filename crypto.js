@@ -1,8 +1,9 @@
 const CRYPTO_ITERATIONS = 10000
-const SALT = "dummy" // !!! Replace with a real salt
+const SALT = "dummy text" // !!! Replace with a real salt
 const DIGEST = "sha256"
 const HASH_LENGTH = 6
 const KEY_LENGTH = 30
+const TRIPCODE_LENGTH = 6
 
 const crypto = require("crypto")
 
@@ -23,7 +24,7 @@ cryptoUtils.genTripcode = (password) => {
 				if (error) {
 					reject(error)
 				} else {
-					resolve(hash.toString("base64"))
+					resolve(hash.toString("base64").substr(0, TRIPCODE_LENGTH))
 				}
 			},
 		)

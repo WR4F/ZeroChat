@@ -1,33 +1,73 @@
 <div id="login">
-	<div>
-		<h1>A live chat without javascript.</h1>
-		<p>No cookies, accounts, <code>&lt;meta http-equiv="refresh"&gt;</code>, or javascript in the browser.</p>
-		<p>No logs, fingerprinting, or tracking of any kind.</p>
+
+	<div id="settings">
+
 	</div>
-	<form action="/" method="POST">
+	<!-- <form action="/_settings" method="POST">
 
-		<input name="handle" tabindex="1" maxlength="25" type="text" placeholder="Handle" autofocus
-			title="Becomes your screen name (Max: 25)" />
-
-		<input name="passcode" tabindex="2" maxlength="30" type="password" placeholder="Passcode"
-			title="Becomes a unique code, type it the same each time (Max: 30)" />
+		<input type="hidden" name="page" value="index">
+		<select name="theme" id="themepicker">
+			<input type="hidden" name="theme" value="<%= theme %>">
+		</select>
 
 		<input type="submit" value="Enter chatroom" />
+	</form> -->
+	<div>
+		<!-- TODO: move this to an easy-to-edit motd.html file -->
+		<p><b>Zero JavaScript</b> in your browser.</p>
+		<p><b>Zero accounts</b>, <b>cookies</b>, or <b>logs</b>.</p>
+		<p>Just a realtime live chat.</p>
+	</div>
+	<form action="/" method="POST" id="loginform">
+
+		<label for="handle">Handle</label>
+
+		<input name="handle" id="handle" required tabindex="1" maxlength="<%= handleMaxlen %>" type="text"
+			placeholder="" autocomplete="off" autofocus
+			title="Becomes your screen name (Max: <%= handleMaxlen %> characters)" />
+
+		<label for="passcode">Passcode</label>
+
+		<input name="passcode" id="passcode" required tabindex="2" maxlength="<%= passMaxlen %>" type="password"
+			autocomplete="off" placeholder=""
+			title="Becomes a unique code, type it the same each time (Max: <%= passMaxlen %> characters)" />
+
+		<!-- <input name="room" tabindex="3" maxlength="<%= roomNameMaxlen %>" value="" placeholder="Room (ex: lobby)" /> -->
+
+		<label for="room">Room <small class="subtle">(Double-click for list)</small></label>
+
+		<input name="room" id="room" type="text" maxlength="<%= roomNameMaxlen %>" placeholder='/Hallway'
+			list="default_rooms" autocomplete="off" class="combolist" tabindex="3"
+			title='The chatroom you will join, typing "/" shows a list (Max: <%= roomNameMaxlen %> characters)'
+			<% if(url != ""){ %>value="/<%= url %>" <% } %>>
+
+		<datalist name="room" id="default_rooms">
+			<!-- TODO: move the suggested rooms to a txt file -->
+			<option value="/Hallway">/Hallway</option>
+			<option value="/Español">/Español</option>
+			<option value="/Français">/Français</option>
+			<option value="/Deutsche">/Deutsche</option>
+			<option value="/中文">/中文</option>
+			<option value="/हिन्दी">/हिन्दी</option>
+			<option value="/TheBackrooms">/TheBackrooms</option>
+		</datalist>
+		</input>
+
+		<input type="hidden" name="theme" value="<%= theme %>">
+
+		<input type="submit" tabindex="4" value="Enter chatroom" />
 	</form>
 
-	<small style="color:gray;float:left">How does it work? It's <a style="font-size:100%"
-			href="https://justhack.in/stateful-http">stateful
-			HTTP</a>.</small>
 </div>
 
 <div class="corners">
-	<a style="float:left" href="https://github.com/rslay/ZeroChat">
-		<svg height="32" viewBox="0 0 16 16" version="1.1" width="32" aria-hidden="true">
-			<path fill-rule="evenodd"
-				d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z">
-			</path>
-		</svg>
-		&nbsp;
-		<small><b style="font-size:100%">ZeroChat</b> is Open Source &#9829; Run your own chat</small>
+	<a href="https://github.com/rslay/ZeroChat" style="justify-self: left;">
+		<img src="/images/github.svg" alt="github">
+		<small><b style="font-size:100%">ZeroChat</b> is Open Source ♥ Run your own</small>
 	</a>
+	<div style="justify-self: center;">
+		<small style="color:gray;">How does it work? It's <a style="font-size:100%"
+				href="https://justhack.in/stateful-http">stateful HTTP</a>.</small>
+	</div>
+	<div></div>
 </div>

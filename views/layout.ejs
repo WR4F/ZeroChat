@@ -3,11 +3,17 @@
 
 <head>
 	<title>ZeroChat</title>
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" charset="utf-8">
 	<link rel='stylesheet' href='/stylesheets/normalize.css' />
 	<link rel='stylesheet' href='/stylesheets/base.css' />
 	<!-- <link rel='stylesheet' href='/stylesheets/dark.css' /> -->
 </head>
 
 <body>
+	<% if (typeof url != "undefined" && url.startsWith("_")) { %>
+	<a href="/<%= url %>" title="URL" id="logo">
+		<img src="/images/z_black.png" alt="ZeroChat" title="ZeroChat">
+		<span>/<%= url %></span>
+	</a>
+	<% } %>
 	<%- include(page) %>
