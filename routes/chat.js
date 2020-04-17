@@ -13,7 +13,7 @@ const WHITESPACE_BITS =
 
 const DEFAULT_ROOM = "hallway" // TODO when loading from file, needs to be sanitized
 const MAX_MESSAGE_LENGTH = 200
-const MAX_FILE_SIZE = 5000000 // 5 Mb
+const MAX_FILE_SIZE = 5242880 // 5 Mb
 const MAX_HANDLE_LENGTH = 15
 const MAX_PASSCODE_LENGTH = 64
 const MAX_ROOMNAME_LENGTH = 24
@@ -159,12 +159,19 @@ let disconnectUser = (user) => {
 }
 
 let getUserByToken = (token) => {
-	let user = users.filter((user) => user.token == token)[0]
+	// TODO: Needs to optionally filter by room? Or is server-wide check ok? Tokens should be unique
+	let user = users.filter((user) => user.token === token)[0]
 	return user
 }
 
-let getUserByHandle = (handle) => {
-	let user = users.filter((user) => user.handle == handle)[0]
+let getUserByHandle = (handle, room) => {
+	// TODO: Needs to optionally filter by room
+	let user = undefined
+	if (room) {
+		user = users.filter((user) => user.handle === handle && user.room === room)[0]
+	} else {
+		user = users.filter((user) => user.handle === handle)[0]
+	}
 	return user
 }
 
@@ -213,15 +220,15 @@ router.post("*", upload.single('fileupload'), (req, res, next) => {
 			return res.render(VIEWS.LAYOUT, {
 				page: VIEWS.ERROR_MESSAGE,
 				url: "_hidden",
-				error: "Field too long",
+				error: "A field you entered was too long.",
 				redirect: URL_PREFIX
 			})
-		} else if (getUserByHandle(req.body.handle) != undefined) {
+		} else if (getUserByHandle(req.body.handle, req.body.room) != undefined) {
 			// return res.render(VIEWS.ERROR, ERRORS.INVALID_REQUEST, (err, html) => res.end(html + "Name taken"))
 			return res.render(VIEWS.LAYOUT, {
 				page: VIEWS.ERROR_MESSAGE,
 				url: "_hidden",
-				error: "Name taken",
+				error: "Someone with that handle is already in /" + req.body.room,
 				redirect: URL_PREFIX
 			})
 		}
@@ -233,7 +240,7 @@ router.post("*", upload.single('fileupload'), (req, res, next) => {
 				page: VIEWS.ERROR_MESSAGE,
 				url: "_hidden",
 				error: "Message too long",
-				redirect: URL_PREFIX + ROUTES.UPLOAD_MESSAGE
+				redirect: URL_PREFIX + ROUTES.UPLOAD_MESSAGE + "?token=" + req.query.token
 			})
 		} else if (req.file != null && req.file.size > MAX_FILE_SIZE) {
 			// file too large
@@ -241,7 +248,7 @@ router.post("*", upload.single('fileupload'), (req, res, next) => {
 				page: VIEWS.ERROR_MESSAGE,
 				url: "_hidden",
 				error: "File too large",
-				redirect: URL_PREFIX + ROUTES.UPLOAD_MESSAGE
+				redirect: URL_PREFIX + ROUTES.UPLOAD_MESSAGE + "?token=" + req.query.token
 			})
 		} else if ((req.body.message == null || req.body.message.trim() == "") && req.file == null) {
 			// no message or file
@@ -249,7 +256,7 @@ router.post("*", upload.single('fileupload'), (req, res, next) => {
 				page: VIEWS.ERROR_MESSAGE,
 				url: "_hidden",
 				error: "Message or file required",
-				redirect: URL_PREFIX + ROUTES.UPLOAD_MESSAGE
+				redirect: URL_PREFIX + ROUTES.UPLOAD_MESSAGE + "?token=" + req.query.token
 			})
 		}
 	}
@@ -308,7 +315,7 @@ router.post(URL_PREFIX + ROUTES.MAIN, (req, res, next) => {
 			}
 		)
 	})
-	// FIXME gotta timeout and delete the user if they connect to this page but never connect to the messages iframe
+	// TODO: gotta timeout and delete the user if they connect to this page but never connect to the messages iframe
 })
 
 /* UPLOAD MSG IFRAME */
@@ -341,7 +348,7 @@ router.post(URL_PREFIX + ROUTES.UPLOAD_MESSAGE, (req, res, next) => {
 			return status
 		})
 		.catch((status) => {
-			// TODO: Issue occured, address problem
+			// TODO: Issue occurs?, address problem
 			return status
 		})
 		.finally((status) => {

@@ -10,7 +10,7 @@
 </head>
 
 <body>
-	<% if (typeof url != "undefined" && url.startsWith("_")) { %>
+	<% if (typeof url != "undefined" && !url.startsWith("_")) { %>
 	<a href="/<%= url %>" title="URL" id="logo">
 		<img src="/images/z_black.png" alt="ZeroChat" title="ZeroChat">
 		<span>/<%= url %></span>
