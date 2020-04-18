@@ -1,5 +1,22 @@
 <div class="message <%= messageType %>" title="<%= timestamp %>">
-    <span class="tripcode"><%= tripcode %></span>
-    <span class="handle"><%= handle %></span>
-    <span class="message-text"><%= message %></span>
+	<span class="tripcode"><%= tripcode %></span>
+	<span class="handle"><%= handle %></span>
+	<div>
+		<% if (typeof file != "undefined") { %>
+		<div class="filedownload">
+			<a href="data:<%= mimetype %>;base64,<%= file %>" download="<%= filename %>"><%= filename %></a>
+			<% if (filetype == "image") { %>
+			<img title="<%= filename %>" src="data:<%= mimetype %>;base64,<%= file %>" />
+			<% } else if (filetype == "video") { %>
+			<video controls title="<%= filename %>" src="data:<%= mimetype %>;base64,<%= file %>"></video>
+			<% } else if (filetype == "audio") { %>
+			<audio controls title="<%= filename %>">
+				<source src="data:<%= mimetype %>;base64,<%= file %>">
+			</audio>
+			<% } else { %>
+			<% } %>
+		</div>
+		<% } %>
+		<span class="message-text"><%= message %></span>
+	</div>
 </div>

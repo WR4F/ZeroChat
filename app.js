@@ -5,19 +5,23 @@ const bodyParser = require("body-parser")
 
 const chatRouter = require("./routes/chat")
 
-var app = express()
+let app = express()
 
 // view engine setup
 app.set("views", path.join(__dirname, "views"))
 app.set("view engine", "ejs")
 
+// NOTE might have to blacklist things like robots.txt and this from /room names
+app.use('/favicon.ico', express.static(path.join(__dirname, 'public', 'images', 'favicon.ico')));
+
+// FIXME are these both needed?
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
-app.use(express.static(path.join(__dirname, "public")))
-
 app.use(bodyParser.json()) // support json encoded bodies
-app.use(bodyParser.urlencoded({ extended: true })) // support encoded bodies
+app.use(bodyParser.urlencoded({ extended: true })) // support x-www-form-urlencoded bodies
 
+
+app.use(express.static(path.join(__dirname, "public"))) // NOTE might have to switch to _ prefix to support /rooms
 app.use("/", chatRouter)
 
 // catch 404 and forward to error handler
@@ -33,7 +37,7 @@ app.use((err, req, res, next) => {
 
 	// render the error page
 	res.status(err.status || 500)
-	res.render("layout", { page: "error" })
+	res.render("layout", { page: "error", url: "" })
 })
 
 module.exports = app

@@ -1,8 +1,11 @@
 <!-- Leaving the action blank submits to the same page -->
-<form id="post" action="" method="post">
-    <input name="token" type="hidden" value="<%= token %>"></input>
+<form id="post" enctype="multipart/form-data" action="" method="post">
+	<input name="token" type="hidden" value="<%= user.token %>"></input>
 
-    <input maxlength="200" type="text" name="message" id="messagebox" placeholder="Write a message here" autofocus
-        autocomplete="false">
-    <input type="submit" value="Send">
+	<input maxlength="<%= maxlen %>" type="text" name="message" id="messagebox" placeholder="<%= placeholder %>"
+		autofocus autocomplete="off">
+
+	<input id="fileupload" name="fileupload" type="file" />
+	<label for="fileupload">Upload...</label>
+	<input type="submit" value="Send">
 </form>
