@@ -1,0 +1,9 @@
+<!-- Leaving the action blank submits to the same page -->
+<form id="upload" enctype="multipart/form-data" action="" method="post">
+	<input name="token" type="hidden" value="<%= user.token %>"></input>
+	<input id="fileupload" name="fileupload" type="file" />
+	<div id="uploadsubmit">
+		<input type="submit" value="Upload">
+		<label for="fileupload">File...</label>
+	</div>
+</form>

@@ -21,7 +21,8 @@ const EXPECTED_TOKEN_LENGTH = 60 // length of crypto.js hash
 const URL_PREFIX = '/' // TODO support any prefix, replace all / in ejs files with var from cfg file
 const ROUTES = {
 	MAIN: '',
-	UPLOAD_MESSAGE: '_upload-message',
+	POST_MESSAGE: '_post-message',
+	UPLOAD_FILE: '_upload-file',
 	CHAT_MESSAGES: '_view-messages',
 	SETTINGS: '_settings',
 }
@@ -33,6 +34,7 @@ const VIEWS = {
 	CHATROOM: 'chatroom',
 	ERROR: 'error',
 	WRITE_MESSAGE: 'write-message',
+	UPLOAD: 'upload-file',
 	NEW_MESSAGE: 'new-message',
 	VIEW_MESSAGES: 'view-messages',
 	ERROR_MESSAGE: 'error-message',
@@ -232,7 +234,7 @@ router.post("*", upload.single('fileupload'), (req, res, next) => {
 				redirect: URL_PREFIX
 			})
 		}
-	} else if (req.url.startsWith(URL_PREFIX + ROUTES.UPLOAD_MESSAGE)) {
+	} else if (req.url.startsWith(URL_PREFIX + ROUTES.POST_MESSAGE)) {
 		// Disconnect if user is sending a blank message without a file, or a message too large
 		if (req.body.message.length > MAX_MESSAGE_LENGTH) {
 			// message too large
@@ -240,7 +242,25 @@ router.post("*", upload.single('fileupload'), (req, res, next) => {
 				page: VIEWS.ERROR_MESSAGE,
 				url: "_hidden",
 				error: "Message too long",
-				redirect: URL_PREFIX + ROUTES.UPLOAD_MESSAGE + "?token=" + req.query.token
+				redirect: URL_PREFIX + ROUTES.POST_MESSAGE + "?token=" + req.query.token
+			})
+		} else if ((req.body.message == null || req.body.message.trim() == "") && req.file == null) {
+			// no message
+			return res.render(VIEWS.LAYOUT, {
+				page: VIEWS.ERROR_MESSAGE,
+				url: "_hidden",
+				error: "Message required",
+				redirect: URL_PREFIX + ROUTES.POST_MESSAGE + "?token=" + req.query.token
+			})
+		}
+	} else if (req.url.startsWith(URL_PREFIX + ROUTES.UPLOAD_FILE)) {
+		if (req.file == null) {
+			// file required
+			return res.render(VIEWS.LAYOUT, {
+				page: VIEWS.ERROR_MESSAGE,
+				url: "_hidden",
+				error: "No file chosen",
+				redirect: URL_PREFIX + ROUTES.UPLOAD_FILE + "?token=" + req.query.token
 			})
 		} else if (req.file != null && req.file.size > MAX_FILE_SIZE) {
 			// file too large
@@ -248,15 +268,7 @@ router.post("*", upload.single('fileupload'), (req, res, next) => {
 				page: VIEWS.ERROR_MESSAGE,
 				url: "_hidden",
 				error: "File too large",
-				redirect: URL_PREFIX + ROUTES.UPLOAD_MESSAGE + "?token=" + req.query.token
-			})
-		} else if ((req.body.message == null || req.body.message.trim() == "") && req.file == null) {
-			// no message or file
-			return res.render(VIEWS.LAYOUT, {
-				page: VIEWS.ERROR_MESSAGE,
-				url: "_hidden",
-				error: "Message or file required",
-				redirect: URL_PREFIX + ROUTES.UPLOAD_MESSAGE + "?token=" + req.query.token
+				redirect: URL_PREFIX + ROUTES.UPLOAD_FILE + "?token=" + req.query.token
 			})
 		}
 	}
@@ -275,9 +287,7 @@ router.get(MAIN_LOGIN_REGEX, (req, res, next) => {
 		roomNameMaxlen: MAX_ROOMNAME_LENGTH,
 		theme: User.DEFAULT_THEME,
 		url: req.url
-	}, (err, html) => {
-		res.end(html)
-	})
+	}, (err, html) => { res.end(html) })
 })
 
 /* IFRAMES PRECHECK */
@@ -308,18 +318,19 @@ router.post(URL_PREFIX + ROUTES.MAIN, (req, res, next) => {
 			{
 				page: VIEWS.CHATROOM,
 				user: user,
-				url: user.room
+				url: user.room,
+				postmsg: URL_PREFIX + ROUTES.POST_MESSAGE,
+				uploadfile: URL_PREFIX + ROUTES.UPLOAD_FILE,
+				chatmsgs: URL_PREFIX + ROUTES.CHAT_MESSAGES
 			},
-			(err, html) => {
-				user.res.chatroom.end(html)
-			}
+			(err, html) => { user.res.chatroom.end(html) }
 		)
 	})
 	// TODO: gotta timeout and delete the user if they connect to this page but never connect to the messages iframe
 })
 
-/* UPLOAD MSG IFRAME */
-router.get(URL_PREFIX + ROUTES.UPLOAD_MESSAGE, (req, res, next) => {
+/* POST MSG IFRAME */
+router.get(URL_PREFIX + ROUTES.POST_MESSAGE, (req, res, next) => {
 	let user = getUserByToken(req.query.token)
 	if (!user) { return res.render(VIEWS.ERROR, ERRORS.INVALID_TOKEN) }
 	user.res.post = res
@@ -329,20 +340,17 @@ router.get(URL_PREFIX + ROUTES.UPLOAD_MESSAGE, (req, res, next) => {
 		user: user,
 		maxlen: MAX_MESSAGE_LENGTH,
 		placeholder: user.nextMsgPlaceholder(req)
-	},
-		(err, html) => {
-			user.res.post.end(html)
-		})
+	}, (err, html) => { user.res.post.end(html) })
 })
 
-/* SUBMITTING UPLOAD MSG IFRAME */
-router.post(URL_PREFIX + ROUTES.UPLOAD_MESSAGE, (req, res, next) => {
+/* SUBMITTING POST MSG IFRAME */
+router.post(URL_PREFIX + ROUTES.POST_MESSAGE, (req, res, next) => {
 	let user = getUserByToken(req.body.token)
 	if (!user) { return res.render(VIEWS.ERROR, ERRORS.INVALID_TOKEN) }
 	user.res.post = res
 
 	// Show the message to all users who have loaded the chatroom
-	broadcast(user, req.body.message, user.room, req.file)
+	broadcast(user, req.body.message, user.room)
 		.then((status) => {
 			// Went ok
 			return status
@@ -357,10 +365,51 @@ router.post(URL_PREFIX + ROUTES.UPLOAD_MESSAGE, (req, res, next) => {
 				user: user,
 				maxlen: MAX_MESSAGE_LENGTH,
 				placeholder: user.nextMsgPlaceholder(req)
-			},
-				(err, html) => { return user.res.post.end(html) })
+			}, (err, html) => { return user.res.post.end(html) })
 		})
 })
+
+
+/* UPLOAD FILE IFRAME */
+router.get(URL_PREFIX + ROUTES.UPLOAD_FILE, (req, res, next) => {
+	let user = getUserByToken(req.query.token)
+	if (!user) { return res.render(VIEWS.ERROR, ERRORS.INVALID_TOKEN) }
+	user.res.upload = res
+
+	user.res.upload.render(
+		VIEWS.LAYOUT,
+		{
+			page: VIEWS.UPLOAD,
+			user: user
+		},
+		(err, html) => { user.res.upload.end(html) }
+	)
+})
+
+/* SUBMITTING UPLOAD FILE IFRAME */
+router.post(URL_PREFIX + ROUTES.UPLOAD_FILE, (req, res, next) => {
+	let user = getUserByToken(req.body.token)
+	if (!user) { return res.render(VIEWS.ERROR, ERRORS.INVALID_TOKEN) }
+	user.res.post = res
+
+	// Show the file to all users who have loaded the chatroom
+	broadcast(user, "", user.room, req.file)
+		.then((status) => {
+			// Went ok
+			return status
+		})
+		.catch((status) => {
+			// TODO: Issue occurs?, address problem
+			return status
+		})
+		.finally((status) => {
+			user.res.post.render(VIEWS.LAYOUT, {
+				page: VIEWS.UPLOAD,
+				user: user
+			}, (err, html) => { return user.res.post.end(html) })
+		})
+})
+
 
 /* MESSAGES IFRAME */
 router.get(URL_PREFIX + ROUTES.CHAT_MESSAGES, (req, res, next) => {
@@ -397,10 +446,10 @@ router.get(URL_PREFIX + ROUTES.CHAT_MESSAGES, (req, res, next) => {
 
 		broadcast(null, user.handle + " (" + user.tripcode + ") joined /" + user.room + ".", user.room)
 
-		// A keep-alive ping, to prevent the connection from dropping
+		// A keep-alive ping, to prevent the connection from dropping (usually not needed)
 		// pingInterval = setInterval(() => {
 		// 	user.res.messages.ping()
-		// }, 1000)
+		// }, 20000)
 	})
 })
 
