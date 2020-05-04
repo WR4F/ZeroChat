@@ -1,61 +1,65 @@
 <div id="login">
 
-	<div id="settings">
-
-	</div>
-	<!-- <form action="/_settings" method="POST">
-
-		<input type="hidden" name="page" value="index">
-		<select name="theme" id="themepicker">
-			<input type="hidden" name="theme" value="<%= theme %>">
-		</select>
-
-		<input type="submit" value="Enter chatroom" />
-	</form> -->
 	<div id="motd">
-		<!-- TODO: move this to an easy-to-edit motd.html file -->
-		<p><b>Zero JavaScript</b> in your browser.</p>
-		<p><b>Zero accounts</b>, <b>cookies</b>, or <b>logs</b>.</p>
-		<p>Just a realtime live chat.</p>
+		<%- include('../motd.html') %>
 	</div>
-	<form action="/" method="POST" id="loginform">
+	<form action="/" method="POST">
 
-		<label for="handle">Handle</label>
+		<div id="settings">
+			<input type="checkbox" id="checkshow">
+			<label for="checkshow"></label>
+			<div id="settings_options">
+				<label>Theme</label>
 
-		<input name="handle" id="handle" required tabindex="1" maxlength="<%= handleMaxlen %>" type="text"
-			placeholder="" autocomplete="off" autofocus
-			title="Becomes your screen name (Max: <%= handleMaxlen %> characters)" />
+				<select name="theme" id="themepicker">
+					<% locals.config.THEMES.forEach( theme => { %>
+					<option <% if (theme == locals.config.DEFAULT_THEME) { %> selected <% } %> name="theme"
+						value="<%= theme %>">
+						<%= theme %>
+					</option>
+					<% }) %>
+				</select>
+				<!-- <label>View</label>
+				<select name="theme" id="themepicker">
+					<option selected name="theme" value="Comfy">Comfy</option>
+					<option selected name="theme" value="Compact">Compact</option>
+				</select> -->
+			</div>
+		</div>
 
-		<label for="passcode">Passcode</label>
+		<div id="loginform">
+			<label for="handle">Handle</label>
 
-		<input name="passcode" id="passcode" required tabindex="2" maxlength="<%= passMaxlen %>" type="password"
-			autocomplete="off" placeholder=""
-			title="Becomes a unique code, type it the same each time (Max: <%= passMaxlen %> characters)" />
+			<input name="handle" id="handle" required tabindex="1" maxlength="<%= handleMaxlen %>" type="text"
+				placeholder="" autocomplete="off" autofocus
+				title="Becomes your screen name (Max: <%= handleMaxlen %> characters)" />
 
-		<!-- <input name="room" tabindex="3" maxlength="<%= roomNameMaxlen %>" value="" placeholder="Room (ex: lobby)" /> -->
+			<label for="passcode">Passcode</label>
 
-		<label for="room">Room <small class="subtle">(Double-click for list)</small></label>
+			<input name="passcode" id="passcode" required tabindex="2" maxlength="<%= passMaxlen %>" type="password"
+				autocomplete="off" placeholder=""
+				title="Becomes a unique code, type it the same each time (Max: <%= passMaxlen %> characters)" />
 
-		<input name="room" id="room" type="text" maxlength="<%= roomNameMaxlen %>" placeholder='/Hallway'
-			list="default_rooms" autocomplete="off" class="combolist" tabindex="3"
-			title='The chatroom you will join, typing "/" shows a list (Max: <%= roomNameMaxlen %> characters)'
-			<% if(url != ""){ %>value="/<%= url %>" <% } %>>
+			<!-- <input name="room" tabindex="3" maxlength="<%= roomNameMaxlen %>" value="" placeholder="Room (ex: lobby)" /> -->
 
-		<datalist name="room" id="default_rooms">
-			<!-- TODO: move the suggested rooms to a txt file -->
-			<option value="/Hallway">/Hallway</option>
-			<option value="/Español">/Español</option>
-			<option value="/Français">/Français</option>
-			<option value="/Deutsche">/Deutsche</option>
-			<option value="/中文">/中文</option>
-			<option value="/हिन्दी">/हिन्दी</option>
-			<option value="/TheBackrooms">/TheBackrooms</option>
-		</datalist>
-		</input>
+			<label for="room">Room <small class="subtle">(Double-click for list)</small></label>
 
-		<input type="hidden" name="theme" value="<%= theme %>">
+			<input name="room" id="room" type="text" maxlength="<%= roomNameMaxlen %>" placeholder='/Hallway'
+				list="default_rooms" autocomplete="off" class="combolist" tabindex="3"
+				title='The chatroom you will join, typing "/" shows a list (Max: <%= roomNameMaxlen %> characters)'
+				<% if(url != ""){ %>value="/<%= url %>" <% } %>>
 
-		<input type="submit" tabindex="4" value="Enter chatroom" />
+			<datalist name="room" id="default_rooms">
+				<% rooms.forEach( room => { %>
+				<option value="/<%= room %>">/<%= room %></option>
+				<% }) %>
+			</datalist>
+			</input>
+
+			<!-- <input type="hidden" name="theme" value="<%= theme %>"> -->
+
+			<input type="submit" tabindex="4" value="Enter chatroom" />
+		</div>
 	</form>
 
 </div>

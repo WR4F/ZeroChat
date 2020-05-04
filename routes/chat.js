@@ -1,5 +1,7 @@
 const express = require("express")
+const fs = require('fs')
 const User = require("../classes/User")
+const config = require('../classes/Config')
 
 // support multipart/form-data
 const multer = require("multer")
@@ -45,15 +47,36 @@ const ERRORS = {
 	INVALID_REQUEST: { message: "Invalid Request", error: "400" },
 }
 
-let users = []
+const FALLBACK_DEFAULT_ROOM = ["Hallway"]
+const ROOMS_FILE = "rooms.txt"
 
+let roomsList = []
+let users = []
 let router = express.Router()
 
+const getRooms = () => {
+	return new Promise((resolve, reject) => {
+		fs.readFile(ROOMS_FILE, 'utf8', (err, data) => {
+			if (err) throw err;
+			if (data == null || data == []) {
+				console.error("Error: " + ROOMS_FILE + " is empty or invalid, it should be a list of default rooms seperated by lines. Defaulting to /" + FALLBACK_DEFAULT_ROOM[0]);
+				reject()
+				process.exit(1)
+			} else {
+				resolve(data.split(/\r?\n/))
+			}
+		})
+	})
+}
 
 const broadcast = (user, message, room, file = undefined) => {
 	return new Promise((resolve, reject) => {
-		if (typeof message != "string" || message.trim() == '') {
+
+		// A second check before sending. It should not be possible to hit this branch
+		if ((typeof message != "string" || message.trim() == '') && !file) {
 			reject("Message is blank or invalid")
+			console.warn("User managed to send a post request with no file or message and pass inital checks!");
+			return user.disconnect()
 		}
 
 		// TODO Extend this to support showing images or files in different ways
@@ -195,11 +218,19 @@ router.post("*", upload.single('fileupload'), (req, res, next) => {
 		req.body.theme = req.body.theme.trim()
 		req.body.room = sanitizeRoomName(req.body.room)
 
+		if (!config.isValidTheme(req.body.theme)) {
+			return res.render(VIEWS.LAYOUT, {
+				page: VIEWS.ERROR_MESSAGE,
+				url: "_hidden",
+				error: "Invalid theme",
+				redirect: URL_PREFIX
+			})
+		}
+
 		// No room selected? Use the default one, if any
 		if (req.body.room === "" && DEFAULT_ROOM) {
 			req.body.room = DEFAULT_ROOM
 		}
-		// TODO: check if theme in list of valid themes
 	}
 
 	if (req.url.substr(0, 2) !== URL_PREFIX + "_") {
@@ -235,6 +266,9 @@ router.post("*", upload.single('fileupload'), (req, res, next) => {
 			})
 		}
 	} else if (req.url.startsWith(URL_PREFIX + ROUTES.POST_MESSAGE)) {
+		let user = getUserByToken(req.query.token)
+		if (!user) { return res.render(VIEWS.ERROR, ERRORS.INVALID_TOKEN) }
+
 		// Disconnect if user is sending a blank message without a file, or a message too large
 		if (req.body.message.length > MAX_MESSAGE_LENGTH) {
 			// message too large
@@ -242,6 +276,7 @@ router.post("*", upload.single('fileupload'), (req, res, next) => {
 				page: VIEWS.ERROR_MESSAGE,
 				url: "_hidden",
 				error: "Message too long",
+				user: user,
 				redirect: URL_PREFIX + ROUTES.POST_MESSAGE + "?token=" + req.query.token
 			})
 		} else if ((req.body.message == null || req.body.message.trim() == "") && req.file == null) {
@@ -250,16 +285,21 @@ router.post("*", upload.single('fileupload'), (req, res, next) => {
 				page: VIEWS.ERROR_MESSAGE,
 				url: "_hidden",
 				error: "Message required",
+				user: user,
 				redirect: URL_PREFIX + ROUTES.POST_MESSAGE + "?token=" + req.query.token
 			})
 		}
 	} else if (req.url.startsWith(URL_PREFIX + ROUTES.UPLOAD_FILE)) {
+		let user = getUserByToken(req.query.token)
+		if (!user) { return res.render(VIEWS.ERROR, ERRORS.INVALID_TOKEN) }
+
 		if (req.file == null) {
 			// file required
 			return res.render(VIEWS.LAYOUT, {
 				page: VIEWS.ERROR_MESSAGE,
 				url: "_hidden",
 				error: "No file chosen",
+				user: user,
 				redirect: URL_PREFIX + ROUTES.UPLOAD_FILE + "?token=" + req.query.token
 			})
 		} else if (req.file != null && req.file.size > MAX_FILE_SIZE) {
@@ -268,6 +308,7 @@ router.post("*", upload.single('fileupload'), (req, res, next) => {
 				page: VIEWS.ERROR_MESSAGE,
 				url: "_hidden",
 				error: "File too large",
+				user: user,
 				redirect: URL_PREFIX + ROUTES.UPLOAD_FILE + "?token=" + req.query.token
 			})
 		}
@@ -286,8 +327,11 @@ router.get(MAIN_LOGIN_REGEX, (req, res, next) => {
 		passMaxlen: MAX_PASSCODE_LENGTH,
 		roomNameMaxlen: MAX_ROOMNAME_LENGTH,
 		theme: User.DEFAULT_THEME,
-		url: req.url
-	}, (err, html) => { res.end(html) })
+		url: req.url,
+		rooms: roomsList
+	}, (err, html) => {
+		res.end(html)
+	})
 })
 
 /* IFRAMES PRECHECK */
@@ -425,7 +469,7 @@ router.get(URL_PREFIX + ROUTES.CHAT_MESSAGES, (req, res, next) => {
 		disconnectUser(user)
 	})
 
-	user.res.messages.render(VIEWS.LAYOUT, { page: VIEWS.VIEW_MESSAGES }, (err, html) => {
+	user.res.messages.render(VIEWS.LAYOUT, { page: VIEWS.VIEW_MESSAGES, user: user }, (err, html) => {
 		user.res.messages.write(html)
 		user.res.messages.render(VIEWS.NEW_MESSAGE,
 			{
@@ -437,6 +481,7 @@ router.get(URL_PREFIX + ROUTES.CHAT_MESSAGES, (req, res, next) => {
 						.filter((iUser) => iUser.room === user.room)
 						.map((iUser) => iUser.handle)
 						.join(', '),
+				user: user,
 				timestamp: new Date().toUTCString()
 			},
 			(err, html) => {
@@ -453,4 +498,5 @@ router.get(URL_PREFIX + ROUTES.CHAT_MESSAGES, (req, res, next) => {
 	})
 })
 
+getRooms().then(data => roomsList = data)
 module.exports = router

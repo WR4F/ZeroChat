@@ -3,6 +3,7 @@ const express = require("express")
 const path = require("path")
 const bodyParser = require("body-parser")
 
+const config = require("./classes/Config")
 const chatRouter = require("./routes/chat")
 
 let app = express()
@@ -10,6 +11,10 @@ let app = express()
 // view engine setup
 app.set("views", path.join(__dirname, "views"))
 app.set("view engine", "ejs")
+
+config.loadThemes().then(() => {
+	app.locals.config = config
+})
 
 // NOTE might have to blacklist things like robots.txt and this from /room names
 app.use('/favicon.ico', express.static(path.join(__dirname, 'public', 'images', 'favicon.ico')));
@@ -40,4 +45,5 @@ app.use((err, req, res, next) => {
 	res.render("layout", { page: "error", url: "" })
 })
 
+console.log("Express app done setting up");
 module.exports = app

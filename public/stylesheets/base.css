@@ -1,7 +1,4 @@
-:root {
-	--bg: #efefef;
-	--fg: #101010;
-}
+
 html,body{
 	padding: 0;
 	margin: 0;
@@ -12,6 +9,10 @@ html,body{
 *{
 	font-family: monospace;
 	font-size: 18px;
+	color: var(--fg);
+}
+a{
+	color: #238dc1;
 }
 input, textarea, select, datalist{
 	-moz-appearance: none;
@@ -20,7 +21,7 @@ input, textarea, select, datalist{
 }
 input, textarea, select, label[for=fileupload]{
 	padding: initial;
-	border: 2px solid #222;
+	border: 2px solid var(--border);
 	background-color: var(--bg);
 	padding: 9px;
 	border-radius: 3px;
@@ -31,7 +32,7 @@ input, textarea, select, label[for=fileupload]{
 }
 select{
 	padding-right: 30px;
-	background-image: url('/images/downarrow_black.png');
+	background-image: var(--dropdown-arrow);
 	background-repeat: no-repeat;
 	background-position: 95% 50%;
 	background-size: 11px 7px;
@@ -51,9 +52,11 @@ label[for=fileupload]{
 	flex-direction: row-reverse;
 	width: 200px;
 }
-#uploadsubmit > input[type=submit], #uploadsubmit > label {
+#uploadsubmit > input[type=submit] {
 	width: 50%;
-	transition: .4s ease all!important;
+}
+#uploadsubmit > label {
+	width: 50%;
 }
 #uploadsubmit > input[type="submit"]:focus + label {
 	display: none;
@@ -63,14 +66,15 @@ label[for=fileupload]{
 }
 #uploadsubmit > input[type="submit"]:focus {
 	width: 100%;
-	content: "Uploading..."
+	content: "Uploading...";
+	transition: .4s ease all!important;
 }
 @-moz-document url-prefix() { /* Firefox doesn't show an arrow (nor the list by default) */
 	.combolist{
 		padding-right: 30px;
 	}
 	.combolist:hover,.combolist:active,.combolist:focus{
-		background-image: url('/images/downarrow_black.png');
+		background-image: var(--dropdown-arrow);
 		background-repeat: no-repeat;
 		background-position: 95% 50%;
 		background-size: 11px 7px;
@@ -89,7 +93,7 @@ iframe{
 }
 code {
 	padding: 3px;
-	background-color: #80808030;
+	background-color: var(--code);
 	border-radius: 3px;
 }
 #motd{
@@ -116,39 +120,42 @@ code {
 }
 #settings{
 	position: absolute;
-	top: auto;
-	right: auto;
-	left: auto;
-	background-color:snow;
+	top: 0px;
+	right: 0px;
+	background: var(--settings);
+	padding: 2px 14px;
+	z-index: 1;
+	text-align: right;
 }
 #settings_options, #checkshow{
 	display:none;
 }
 
-#checkshow + label:before,#checkshow + label::before{
-	content:"⚙ ";
-	color: slategray;
+#checkshow + label:before {
+	content:" ";
 }
-#checkshow + label:after,#checkshow + label::after{
+#checkshow + label:after {
 	content:" Settings";
-	color: slategray;
 }
 
-#checkshow:checked  + label:before,#checkshow:checked  + label::before{
-	content:"✖ ";
-	color: crimson;
+#checkshow:checked + label:before {
+	content:" ";
+	color: var(--close);
 }
-#checkshow:checked + label:after,#checkshow:checked + label::after{
+#checkshow:checked + label:after {
 	content:" Close";
-	color: crimson;
+	color: var(--close);
 }
 
-#checkshow:checked + label + #settings_options{
-	display:block;
+#checkshow:checked + label + #settings_options {
+	display: grid;
+	padding: 10px 20px;
+	grid-gap: 20px;
+	grid-template-columns: auto auto;
 }
 #settings_options {
-	width: 700px;
-	height: 600px;
+	/* width: 700px;
+	height: 600px; */
 }
 
 /* Page-specific styles */
@@ -273,7 +280,7 @@ iframe#chat-frame{
 
 .message {
 	padding: 10px 5px;
-	border-top: 1px solid #88888833;
+	border-top: 1px solid var(--message-separator);
 	display: flex;
 }
 
@@ -295,11 +302,11 @@ iframe#chat-frame{
 }
 
 .message:not(.self) > .handle{
-	color: salmon;
+	color: var(--handle-color);
 }
 
 .message.self > .handle{
-	color: steelblue
+	color: var(--self-color)
 }
 
 .message .filedownload > :nth-child(2) {
@@ -332,7 +339,7 @@ iframe#chat-frame{
 	justify-content: center;
 	align-items: center;
 	justify-items: center;
-	border: 2px solid #0000002e;
+	border: 2px solid var(--border);
 	border-radius: 3px;
 	padding: 10px;
 }
@@ -407,9 +414,6 @@ iframe#chat-frame{
 	#uploadsubmit *, #uploadsubmit label[for="fileupload"]{
 		font-size: 12px;
 		padding: 5px;
-	}
-	#uploadsubmit {
-		width: auto;
 	}
 }
 @media only screen and (max-width: 370px) {
