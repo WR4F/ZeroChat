@@ -6,8 +6,9 @@ const crypto = require("../crypto")
  */
 module.exports = class User {
 	static DEFAULT_THEME = "dark"
+
 	static placeholderSequence = [
-		"Write a message here...",
+		"Type here, press [ENTER] to send...",
 		"Press [TAB] to type another message here...",
 		""
 	]
@@ -18,7 +19,7 @@ module.exports = class User {
 		this.tripcode = crypto.genTripcode(pass) // identifying tripcode
 		this.theme = theme // preferred theme
 		this.room = room // the room the user is in
-		this.res = { "chatroom": res, "post": null, "messages": null } // response object
+		this.res = { "chatroom": res, "post": null, "upload": null, "messages": null } // response object
 		this.placeholderIter = 0
 	}
 	toString() {
@@ -48,6 +49,11 @@ module.exports = class User {
 		if (this.res.post) {
 			try {
 				this.res.post
+			} catch (error) { }
+		}
+		if (this.res.upload) {
+			try {
+				this.res.messages
 			} catch (error) { }
 		}
 		if (this.res.messages) {

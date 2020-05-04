@@ -6,7 +6,13 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" charset="utf-8">
 	<link rel='stylesheet' href='/stylesheets/normalize.css' />
 	<link rel='stylesheet' href='/stylesheets/base.css' />
-	<!-- <link rel='stylesheet' href='/stylesheets/dark.css' /> -->
+	<% if (typeof theme != "undefined" && locals.config.isValidTheme(theme)) { %>
+	<link rel='stylesheet' href='/themes/<%= theme %>.css' />
+	<% } else if (typeof user != "undefined" && typeof user.theme != "undefined" && locals.config.isValidTheme(user.theme)) { %>
+	<link rel='stylesheet' href='/themes/<%= user.theme %>.css' />
+	<% } else { %>
+	<link rel='stylesheet' href='/themes/<%= locals.config.DEFAULT_THEME %>.css' />
+	<% } %>
 </head>
 
 <body>
