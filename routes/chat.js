@@ -5,8 +5,6 @@ const config = require('../classes/Config')
 
 // support multipart/form-data
 const multer = require("multer")
-let storage = multer.memoryStorage()
-let upload = multer({ storage: storage })
 
 // The exact amount of bytes (1024 + 1) needed for a browser to take our (incomplete) response seriously
 // and begin rendering the HTML sent so far, immediately
@@ -14,8 +12,9 @@ const WHITESPACE_BITS =
 	"                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 "
 
 const DEFAULT_ROOM = "hallway" // TODO when loading from file, needs to be sanitized
-const MAX_MESSAGE_LENGTH = 200
-const MAX_FILE_SIZE = 5242880 // 5 Mb
+const MAX_MESSAGE_LENGTH = 300
+// const MAX_FILE_SIZE = 5242880 // 5 Mb
+const MAX_FILE_SIZE = 10 // 5 Mb
 const MAX_HANDLE_LENGTH = 15
 const MAX_PASSCODE_LENGTH = 64
 const MAX_ROOMNAME_LENGTH = 24
@@ -49,6 +48,9 @@ const ERRORS = {
 
 const FALLBACK_DEFAULT_ROOM = ["Hallway"]
 const ROOMS_FILE = "rooms.txt"
+
+let storage = multer.memoryStorage()
+let upload = multer({ storage: storage, limits: { fileSize: MAX_FILE_SIZE, files: 1 } })
 
 let roomsList = []
 let users = []
@@ -184,13 +186,10 @@ let disconnectUser = (user) => {
 }
 
 let getUserByToken = (token) => {
-	// TODO: Needs to optionally filter by room? Or is server-wide check ok? Tokens should be unique
-	let user = users.filter((user) => user.token === token)[0]
-	return user
+	return users.filter((user) => user.token === token)[0]
 }
 
 let getUserByHandle = (handle, room) => {
-	// TODO: Needs to optionally filter by room
 	let user = undefined
 	if (room) {
 		user = users.filter((user) => user.handle === handle && user.room === room)[0]
@@ -198,6 +197,19 @@ let getUserByHandle = (handle, room) => {
 		user = users.filter((user) => user.handle === handle)[0]
 	}
 	return user
+}
+
+router.errorWithPostToken = (err, req, res) => {
+	let user = getUserByToken(req.body.token)
+	if (!user) { return res.render(VIEWS.ERROR, ERRORS.INVALID_TOKEN) }
+
+	return res.render(VIEWS.LAYOUT, {
+		page: VIEWS.ERROR_MESSAGE,
+		url: "_hidden",
+		error: err.message,
+		user: user,
+		redirect: URL_PREFIX + ROUTES.UPLOAD_FILE + "?token=" + req.body.token
+	})
 }
 
 // Set headers

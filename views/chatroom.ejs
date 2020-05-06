@@ -1,5 +1,8 @@
 <div id="post-frame-parent">
-    <iframe allowtransparency="true" id="post-frame" src="<%= postmsg %>?token=<%= user.token %>" autofocus></iframe>
-    <iframe allowtransparency="true" id="upload-frame" src="<%= uploadfile %>?token=<%= user.token %>"></iframe>
+    <iframe sandbox="allow-forms allow-scripts" allowtransparency="true" id="post-frame"
+        src="<%= postmsg %>?token=<%= user.token %>" autofocus></iframe>
+    <iframe sandbox="allow-forms allow-scripts" allowtransparency="true" id="upload-frame"
+        src="<%= uploadfile %>?token=<%= user.token %>"></iframe>
 </div>
-<iframe allowtransparency="true" id="chat-frame" src="<%= chatmsgs %>?token=<%= user.token %>"></iframe>
+<iframe sandbox="allow-forms" allowtransparency="true" id="chat-frame"
+    src="<%= chatmsgs %>?token=<%= user.token %>"></iframe>
