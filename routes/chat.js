@@ -13,8 +13,7 @@ const WHITESPACE_BITS =
 
 const DEFAULT_ROOM = "hallway" // TODO when loading from file, needs to be sanitized
 const MAX_MESSAGE_LENGTH = 300
-// const MAX_FILE_SIZE = 5242880 // 5 Mb
-const MAX_FILE_SIZE = 10 // 5 Mb
+const MAX_FILE_SIZE = 5242880 // 5 Mb
 const MAX_HANDLE_LENGTH = 15
 const MAX_PASSCODE_LENGTH = 64
 const MAX_ROOMNAME_LENGTH = 24
