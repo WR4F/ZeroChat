@@ -7,7 +7,7 @@ const TRIPCODE_LENGTH = 6
 
 const crypto = require("crypto")
 
-var cryptoUtils = {}
+let cryptoUtils = {}
 
 /**
  * Generate tripcode
