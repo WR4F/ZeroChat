@@ -266,6 +266,7 @@ router.post("*", async (req, res, next) => {
 			return resolve()
 		})
 	}).then(() => {
+		req.body.settings = (req.body.settings == 'true')
 		if (req.body.handle && req.body.passcode && req.body.theme) {
 			req.body.handle = req.body.handle.trim()
 			req.body.passcode = req.body.passcode.trim()
@@ -288,21 +289,32 @@ router.post("*", async (req, res, next) => {
 		}
 
 		if (req.url.substr(0, 2) !== URL_PREFIX + "_") {
-			// Disconnect if user is logging in with a name/passcode too long or blank
-			if (
-				(req.body.handle === ""
-					|| req.body.passcode === ""
-					|| req.body.room === "")) {
-				// return res.render(VIEWS.ERROR, ERRORS.INVALID_REQUEST, (err, html) => res.end(html + "Field cannot be blank"))
+			// Check if the user is sending an update to their settings or not
+			if (req.body.settings) {
+				// Reload front page with settings applied
+				return res.render(VIEWS.LAYOUT, {
+					page: VIEWS.FRONT_PAGE,
+					handleMaxlen: MAX_HANDLE_LENGTH,
+					passMaxlen: MAX_PASSCODE_LENGTH,
+					roomNameMaxlen: MAX_ROOMNAME_LENGTH,
+					theme: req.body.theme || User.DEFAULT_THEME,
+					url: sanitizeRoomName(req.url),
+					rooms: roomsList
+				})
+			} else if (req.body.handle === ""
+				|| req.body.passcode === ""
+				|| req.body.room === "") {
+				// User is missing a required field
 				return res.render(VIEWS.LAYOUT, {
 					page: VIEWS.ERROR_MESSAGE,
 					url: "_hidden",
 					error: "Field missing",
 					redirect: URL_PREFIX
 				})
-			} else if (req.body.handle && req.body.handle.length > MAX_HANDLE_LENGTH
-				|| req.body.passcode.length > MAX_PASSCODE_LENGTH
-				|| req.body.room.length > MAX_ROOMNAME_LENGTH) {
+			} else if ((req.body.handle && req.body.handle.length > MAX_HANDLE_LENGTH)
+				|| (req.body.passcode && req.body.passcode.length > MAX_PASSCODE_LENGTH)
+				|| (req.body.room && req.body.room.length > MAX_ROOMNAME_LENGTH)) {
+				// Disconnect if user is logging in with a name/passcode too long or blank
 				return res.render(VIEWS.LAYOUT, {
 					page: VIEWS.ERROR_MESSAGE,
 					url: "_hidden",
@@ -310,6 +322,7 @@ router.post("*", async (req, res, next) => {
 					redirect: URL_PREFIX
 				})
 			} else if (getUserByHandle(req.body.handle, req.body.room) != undefined) {
+				// Disconnect user is their name is already taken
 				return res.render(VIEWS.LAYOUT, {
 					page: VIEWS.ERROR_MESSAGE,
 					url: "_hidden",
@@ -418,12 +431,13 @@ router.post(URL_PREFIX + ROUTES.MAIN, (req, res, next) => {
 				url: user.room,
 				postmsg: URL_PREFIX + ROUTES.POST_MESSAGE,
 				uploadfile: URL_PREFIX + ROUTES.UPLOAD_FILE,
-				chatmsgs: URL_PREFIX + ROUTES.CHAT_MESSAGES
+				chatmsgs: URL_PREFIX + ROUTES.CHAT_MESSAGES,
+				settingsPanel: URL_PREFIX + ROUTES.SETTINGS,
 			},
 			(err, html) => { user.res.chatroom.end(html) }
 		)
 	})
-	// TODO: gotta timeout and delete the user if they connect to this page but never connect to the messages iframe
+	// !!! gotta timeout and delete the user if they connect to this page but never connect to the messages iframe
 })
 
 /* POST MSG IFRAME */

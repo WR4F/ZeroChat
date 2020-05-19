@@ -3,29 +3,10 @@
 	<div id="motd">
 		<%- include('../motd.html') %>
 	</div>
+
+	<%- include("settings") %>
+
 	<form action="/" method="POST">
-
-		<div id="settings">
-			<input type="checkbox" id="checkshow">
-			<label for="checkshow"></label>
-			<div id="settings_options">
-				<label>Theme</label>
-
-				<select name="theme" id="themepicker">
-					<% locals.config.THEMES.forEach( theme => { %>
-					<option <% if (theme == locals.config.DEFAULT_THEME) { %> selected <% } %> name="theme"
-						value="<%= theme %>">
-						<%= theme %>
-					</option>
-					<% }) %>
-				</select>
-				<!-- <label>View</label>
-				<select name="theme" id="themepicker">
-					<option selected name="theme" value="Comfy">Comfy</option>
-					<option selected name="theme" value="Compact">Compact</option>
-				</select> -->
-			</div>
-		</div>
 
 		<div id="loginform">
 			<label for="handle">Handle</label>
@@ -56,7 +37,7 @@
 			</datalist>
 			</input>
 
-			<!-- <input type="hidden" name="theme" value="<%= theme %>"> -->
+			<input type="hidden" name="theme" value="<%= theme %>">
 
 			<input type="submit" tabindex="4" value="Enter chatroom" />
 		</div>

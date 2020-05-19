@@ -157,6 +157,9 @@ code {
 	/* width: 700px;
 	height: 600px; */
 }
+#settings-save {
+	grid-column: span 2;
+}
 
 /* Page-specific styles */
 
@@ -244,6 +247,11 @@ iframe#post-frame, iframe#upload-frame{
 	width: 100%;
 	margin: 0 auto;
 }
+iframe#settings-frame {
+	position: fixed;
+	left: 0;
+	bottom: 0;
+}
 #post{
 	margin: 0 auto;
 	display: flex;
@@ -326,6 +334,10 @@ iframe#chat-frame{
 	flex-grow: 0;
 }
 
+.message.system .message-text {
+	color: var(--system-color);
+}
+
 .error-message {
 	display: flex;
 	justify-content: center;
@@ -347,6 +359,10 @@ iframe#chat-frame{
 	border: 2px solid var(--border);
 	border-radius: 3px;
 	padding: 10px;
+}
+
+.filedownload span {
+	margin: 0;
 }
 
 
