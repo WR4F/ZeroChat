@@ -1,4 +1,6 @@
-
+:root{
+	--midgray: #777777;
+}
 html,body{
 	padding: 0;
 	margin: 0;
@@ -102,7 +104,25 @@ code {
 
 /* Settings */
 
-#checkshow,#checkshow + label{
+#settings{
+	position: absolute;
+	top: 0px;
+	right: 0px;
+	padding: 0px 18px;
+	z-index: 1;
+	text-align: right;
+	background: var(--settings);
+	border: 2px solid var(--border);
+	border-top: 0;
+	border-right: 0;
+	border-bottom-left-radius: 3px;
+	line-height: initial;
+}
+#settings_options, #checkshow{
+	display:none;
+}
+
+#checkshow, #checkshow + label{
 	cursor:pointer
 }
 #checkshow + label{
@@ -114,36 +134,27 @@ code {
 	background-color: transparent;
 	width: initial;
 	text-align: center;
+	font-size: 50px;
+	line-height: initial;
 }
-#checkshow:checked + label {
-	background-color: transparent;
-}
-#settings{
-	position: absolute;
-	top: 0px;
-	right: 0px;
-	background: var(--settings);
-	padding: 2px 14px;
-	z-index: 1;
-	text-align: right;
-}
-#settings_options, #checkshow{
-	display:none;
-}
-
 #checkshow + label:before {
 	content:" ";
 }
 #checkshow + label:after {
-	content:" Settings";
+	content:"≡";
 }
 
+#checkshow:checked + label {
+	background-color: transparent;
+	font-size: inherit;
+	line-height: 55px;
+}
 #checkshow:checked + label:before {
 	content:" ";
 	color: var(--close);
 }
 #checkshow:checked + label:after {
-	content:" Close";
+	content:"Close";
 	color: var(--close);
 }
 
@@ -174,16 +185,16 @@ code {
 	align-items: center;
 	gap: 0.5rem;
 	text-decoration: none !important;
-	background: var(--bg);
 	padding: 5px;
 	grid-auto-flow: column;
 }
 #logo img{
 	height: 2rem;
+	filter: invert(1) brightness(0.5);
 }
 #logo span{
 	font-size: 0.8rem;
-	color: var(--fg)
+	color: var(--midgray);
 }
 #login {
 	display: flex;
@@ -241,6 +252,8 @@ div#post-frame-parent {
 	justify-items: center;
 	align-items: center;
 	justify-content: center;
+	z-index: 1;
+	position: relative;
 }
 iframe#post-frame, iframe#upload-frame{
 	height: 60px;
@@ -249,8 +262,10 @@ iframe#post-frame, iframe#upload-frame{
 }
 iframe#settings-frame {
 	position: fixed;
-	left: 0;
-	bottom: 0;
+	right: 0;
+	top: 0;
+	height: 300px;
+	width: 265px;
 }
 #post{
 	margin: 0 auto;
@@ -271,9 +286,10 @@ iframe#settings-frame {
 /* Chat messages page */
 
 iframe#chat-frame{
-	height: calc( 100vh - 70px );
+	height: 100vh;
 	width: 100%;
 	margin: 0 auto;
+	margin-top: -60px;
 }
 
 #chat{
@@ -444,3 +460,29 @@ iframe#chat-frame{
 	}
 }
 
+@media only screen and (max-width: 1670px) {
+	iframe#settings-frame.snapbottom {
+		left: 0;
+		bottom: 0;
+		top: inherit;
+		width: 250px;
+		height: 190px;
+	}
+}
+
+@media only screen and (max-width: 250px) {
+	#settings.snapbottom {
+		padding: 0px 10px;
+		border-top-width: 2px;
+		border-right-width: 2px;
+		border-bottom-left-radius: initial;
+		border-top-right-radius: 3px;
+		top: inherit;
+		right: inherit;
+		left: 0;
+		bottom: 0;
+		border: 0;
+		border-top: 2px solid var(--border);
+		border-right: 2px solid var(--border);
+	}
+}

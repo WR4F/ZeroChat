@@ -1,4 +1,5 @@
 const crypto = require("../crypto")
+const config = require("./Config")
 
 // TODO: User input data needs sanitizing
 /**
@@ -19,24 +20,22 @@ module.exports = class User {
 		this.tripcode = crypto.genTripcode(pass) // identifying tripcode
 		this.theme = theme // preferred theme
 		this.room = room // the room the user is in
-		this.res = { "chatroom": res, "post": null, "upload": null, "messages": null } // response object
+		this.res = { "chatroom": res, "post": null, "upload": null, "messages": null, "settings": null } // response object
 		this.placeholderIter = 0
 	}
+
 	toString() {
 		return '{"handle":"' + this.handle + '","tripcode":"' + this.tripcode + '"}'
 	}
 
-	nextMsgPlaceholder(req) {
-		let result = User.placeholderSequence[this.placeholderIter]
-
-		// Prepare for next time the placeholder is requested
-		if (this.placeholderIter === 0 /*&& req.headers['user-agent'].indexOf("Firefox") !== -1*/) {
-			this.placeholderIter++
+	// Update the user's current theme live
+	setTheme(theme) {
+		if (config.isValidTheme(theme)) {
+			this.theme = theme
+			this.updateStream(`<link rel='stylesheet' href='${config.urlPrefix}/themes/${this.theme}.css' />`)
 		} else {
-			this.placeholderIter = 2
+			throw new Error("Invalid theme '" + theme + "'")
 		}
-
-		return result
 	}
 
 	// Attempt to disconnect each page
@@ -53,7 +52,7 @@ module.exports = class User {
 		}
 		if (this.res.upload) {
 			try {
-				this.res.messages
+				this.res.upload
 			} catch (error) { }
 		}
 		if (this.res.messages) {
@@ -61,5 +60,29 @@ module.exports = class User {
 				this.res.messages
 			} catch (error) { }
 		}
+		if (this.res.settings) {
+			try {
+				this.res.settings
+			} catch (error) { }
+		}
 	}
+
+	nextMsgPlaceholder(req) {
+		let result = User.placeholderSequence[this.placeholderIter]
+
+		// Prepare for next time the placeholder is requested
+		if (this.placeholderIter === 0 /*&& req.headers['user-agent'].indexOf("Firefox") !== -1*/) {
+			this.placeholderIter++
+		} else {
+			this.placeholderIter = 2
+		}
+
+		return result
+	}
+
+	// Update the open chatroom stream with HTML for this user
+	updateStream(html) {
+		this.res.messages.write(html)
+	}
+
 }

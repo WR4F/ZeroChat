@@ -12,8 +12,13 @@ let app = express()
 app.set("views", path.join(__dirname, "views"))
 app.set("view engine", "ejs")
 
-config.loadThemes().then(() => {
+config.loadConfig()
+.then(() => {
 	app.locals.config = config
+})
+.catch((error) => {
+	console.error(error)
+	exit(1)
 })
 
 // NOTE might have to blacklist things like robots.txt and this from /room names

@@ -3,4 +3,5 @@
     <iframe allowtransparency="true" id="upload-frame" src="<%= uploadfile %>?token=<%= user.token %>"></iframe>
 </div>
 <iframe allowtransparency="true" id="chat-frame" src="<%= chatmsgs %>?token=<%= user.token %>"></iframe>
-<iframe allowtransparency="true" id="settings-frame" src="<%= settingsPanel %>?token=<%= user.token %>"></iframe>
+<iframe allowtransparency="true" id="settings-frame" <% if (typeof snapbottom != "undefined" && snapbottom) { %>
+    class="snapbottom" <% } %> src="<%= settingsPanel %>?token=<%= user.token %>"></iframe>

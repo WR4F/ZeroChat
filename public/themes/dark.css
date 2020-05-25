@@ -8,9 +8,9 @@
 	--system-color: #46b498;
 	--code: #80808030;
 	--settings: #353535;
-	--close: #dc143c;
+	--close: #f34343;
 	--dropdown-arrow: url('/images/downarrow_white.png');
 }
-.corners img, #logo img{
+.corners img {
 	filter: invert(1) brightness(0.8);
 }

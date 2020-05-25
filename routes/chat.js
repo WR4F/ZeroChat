@@ -15,7 +15,7 @@ const MAX_HANDLE_LENGTH = 15
 const MAX_PASSCODE_LENGTH = 64
 const MAX_ROOMNAME_LENGTH = 24
 const EXPECTED_TOKEN_LENGTH = 60 // length of crypto.js hash
-const URL_PREFIX = '/' // TODO support any prefix, replace all / in ejs files with var from cfg file
+const URL_PREFIX = config.urlPrefix // TODO Support any prefix, replace all / in ejs files with var from cfg file
 const ROUTES = {
 	MAIN: '',
 	POST_MESSAGE: '_post-message',
@@ -35,6 +35,7 @@ const VIEWS = {
 	NEW_MESSAGE: 'new-message',
 	VIEW_MESSAGES: 'view-messages',
 	ERROR_MESSAGE: 'error-message',
+	SETTINGS: 'settings',
 }
 
 const ERRORS = {
@@ -433,12 +434,13 @@ router.post(URL_PREFIX + ROUTES.MAIN, (req, res, next) => {
 				uploadfile: URL_PREFIX + ROUTES.UPLOAD_FILE,
 				chatmsgs: URL_PREFIX + ROUTES.CHAT_MESSAGES,
 				settingsPanel: URL_PREFIX + ROUTES.SETTINGS,
-			},
-			(err, html) => { user.res.chatroom.end(html) }
+				snapbottom: true
+			}
 		)
 	})
 	// !!! gotta timeout and delete the user if they connect to this page but never connect to the messages iframe
 })
+
 
 /* POST MSG IFRAME */
 router.get(URL_PREFIX + ROUTES.POST_MESSAGE, (req, res, next) => {
@@ -453,7 +455,6 @@ router.get(URL_PREFIX + ROUTES.POST_MESSAGE, (req, res, next) => {
 		placeholder: user.nextMsgPlaceholder(req)
 	}, (err, html) => { user.res.post.end(html) })
 })
-
 /* SUBMITTING POST MSG IFRAME */
 router.post(URL_PREFIX + ROUTES.POST_MESSAGE, (req, res, next) => {
 	let user = getUserByToken(req.body.token)
@@ -493,16 +494,14 @@ router.get(URL_PREFIX + ROUTES.UPLOAD_FILE, (req, res, next) => {
 		{
 			page: VIEWS.UPLOAD,
 			user: user
-		},
-		(err, html) => { user.res.upload.end(html) }
+		}
 	)
 })
-
 /* SUBMITTING UPLOAD FILE IFRAME */
 router.post(URL_PREFIX + ROUTES.UPLOAD_FILE, (req, res, next) => {
 	let user = getUserByToken(req.body.token)
 	if (!user) { return res.render(VIEWS.ERROR, ERRORS.INVALID_TOKEN) }
-	user.res.post = res
+	user.res.upload = res
 
 	// Show the file to all users who have loaded the chatroom
 	broadcast(user, "", user.room, req.file)
@@ -515,15 +514,60 @@ router.post(URL_PREFIX + ROUTES.UPLOAD_FILE, (req, res, next) => {
 			return status
 		})
 		.finally((status) => {
-			user.res.post.render(VIEWS.LAYOUT, {
+			user.res.upload.render(VIEWS.LAYOUT, {
 				page: VIEWS.UPLOAD,
 				user: user
-			}, (err, html) => { return user.res.post.end(html) })
+			}, (err, html) => { return user.res.upload.end(html) })
 		})
 })
 
 
-/* MESSAGES IFRAME */
+/* SETTINGS IFRAME */
+router.get(URL_PREFIX + ROUTES.SETTINGS, (req, res, next) => {
+	let user = getUserByToken(req.query.token)
+	if (!user) { return res.render(VIEWS.ERROR, ERRORS.INVALID_TOKEN) }
+	user.res.settings = res
+
+	user.res.settings.render(
+		VIEWS.LAYOUT,
+		{
+			page: VIEWS.SETTINGS,
+			user: user,
+			theme: user.theme,
+			snapbottom: true,
+			redirect: URL_PREFIX + ROUTES.SETTINGS + "?token=" + req.query.token,
+		},
+		(err, html) => { return user.res.settings.end(html) }
+	)
+})
+/* SUBMITTING SETTINGS IFRAME */
+router.post(URL_PREFIX + ROUTES.SETTINGS, (req, res, next) => {
+	let user = getUserByToken(req.query.token)
+	if (!user) { return res.render(VIEWS.ERROR, ERRORS.INVALID_TOKEN) }
+	user.res.settings = res
+
+	if (user.theme !== req.body.theme) {
+		try {
+			user.setTheme(req.body.theme)
+			user.res.settings.render(
+				VIEWS.LAYOUT,
+				{
+					page: VIEWS.SETTINGS,
+					user: user,
+					theme: user.theme,
+					snapbottom: true,
+					redirect: URL_PREFIX + ROUTES.SETTINGS + "?token=" + req.query.token,
+				},
+				(err, html) => { return user.res.settings.end(html) }
+			)
+		} catch (error) {
+			// TODO display an error on page about invalid theme
+		}
+	}
+})
+
+
+/* MESSAGES IFRAME (STREAMED) */
 router.get(URL_PREFIX + ROUTES.CHAT_MESSAGES, (req, res, next) => {
 
 	// Find user

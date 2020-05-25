@@ -1,27 +1,39 @@
-<form action="/" method="POST">
-	<div id="settings">
-		<input type="checkbox" id="checkshow">
-		<label for="checkshow"></label>
-		<div id="settings_options">
-			<label>Theme</label>
+<% if (typeof redirect != "undefined") { %>
+<form action="<%= redirect %>" method="POST">
+	<% } else { %>
+	<form action="" method="POST">
+		<% } %>
+		<div id="settings" <% if (typeof snapbottom != "undefined" && snapbottom) { %> class="snapbottom" <% } %>>
+			<input type="checkbox" id="checkshow">
+			<label for="checkshow"></label>
+			<div id="settings_options">
+				<label>Theme</label>
 
-			<input type="hidden" name="settings" value="true">
+				<input type="hidden" name="settings" value="true">
 
-			<select name="theme" id="themepicker">
-				<% locals.config.THEMES.forEach( curTheme => { %>
-				<option <% if (curTheme == (theme || locals.config.DEFAULT_THEME)) { %> selected <% } %> name="theme"
-					value="<%= curTheme %>">
-					<%= curTheme %>
-				</option>
-				<% }) %>
-			</select>
-			<!-- <label>View</label>
+				<select name="theme" id="themepicker">
+					<% locals.config.themes.forEach( curTheme => { %>
+					<option <% if (curTheme == (theme || locals.config.DEFAULT_THEME)) { %> selected <% } %>
+						name="theme" value="<%= curTheme %>">
+						<%= curTheme %>
+					</option>
+					<% }) %>
+				</select>
+				<!-- <label>View</label>
 			<select name="theme" id="themepicker">
 				<option selected name="theme" value="Comfy">Comfy</option>
 				<option selected name="theme" value="Compact">Compact</option>
 			</select> -->
-			<input type="submit" id="settings-save" value="Apply" />
-		</div>
+				<input type="submit" id="settings-save" value="Apply" />
+			</div>
 
-	</div>
-</form>
+		</div>
+	</form>
+	<% if (typeof snapbottom != "undefined" && snapbottom) { %>
+	<style>
+		html,
+		body {
+			background-color: transparent;
+		}
+	</style>
+	<% } %>
