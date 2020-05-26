@@ -1,0 +1,16 @@
+:root {
+	--bg: #101010;
+	--fg: #c0c0c0;
+	--border: #f0f0f0bd;
+	--message-separator: #88888833;
+	--handle-color: #fa8072;
+	--self-color: #4682b4;
+	--system-color: #46b498;
+	--code: #80808030;
+	--settings: #353535;
+	--close: #f34343;
+	--dropdown-arrow: url('/images/downarrow_white.png');
+}
+.corners img {
+	filter: invert(1) brightness(0.8);
+}

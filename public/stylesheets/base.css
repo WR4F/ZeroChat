@@ -1,6 +1,5 @@
-:root {
-	--bg: #efefef;
-	--fg: #101010;
+:root{
+	--midgray: #777777;
 }
 html,body{
 	padding: 0;
@@ -12,6 +11,10 @@ html,body{
 *{
 	font-family: monospace;
 	font-size: 18px;
+	color: var(--fg);
+}
+a{
+	color: #238dc1;
 }
 input, textarea, select, datalist{
 	-moz-appearance: none;
@@ -20,7 +23,7 @@ input, textarea, select, datalist{
 }
 input, textarea, select, label[for=fileupload]{
 	padding: initial;
-	border: 2px solid #222;
+	border: 2px solid var(--border);
 	background-color: var(--bg);
 	padding: 9px;
 	border-radius: 3px;
@@ -31,7 +34,7 @@ input, textarea, select, label[for=fileupload]{
 }
 select{
 	padding-right: 30px;
-	background-image: url('/images/downarrow_black.png');
+	background-image: var(--dropdown-arrow);
 	background-repeat: no-repeat;
 	background-position: 95% 50%;
 	background-size: 11px 7px;
@@ -46,12 +49,34 @@ input[type=file]{
 label[for=fileupload]{
 	width: auto;
 }
+#uploadsubmit {
+	display: flex;
+	flex-direction: row-reverse;
+	width: 200px;
+}
+#uploadsubmit > input[type=submit] {
+	width: 50%;
+}
+#uploadsubmit > label {
+	width: 50%;
+}
+#uploadsubmit > input[type="submit"]:focus + label {
+	display: none;
+}
+#uploadsubmit > input[type="submit"] {
+	content: "Upload"
+}
+#uploadsubmit > input[type="submit"]:focus {
+	width: 100%;
+	content: "Uploading...";
+	transition: .4s ease all!important;
+}
 @-moz-document url-prefix() { /* Firefox doesn't show an arrow (nor the list by default) */
 	.combolist{
 		padding-right: 30px;
 	}
 	.combolist:hover,.combolist:active,.combolist:focus{
-		background-image: url('/images/downarrow_black.png');
+		background-image: var(--dropdown-arrow);
 		background-repeat: no-repeat;
 		background-position: 95% 50%;
 		background-size: 11px 7px;
@@ -70,13 +95,34 @@ iframe{
 }
 code {
 	padding: 3px;
-	background-color: #80808030;
+	background-color: var(--code);
 	border-radius: 3px;
+}
+#motd{
+	padding: 15px;
 }
 
 /* Settings */
 
-#checkshow,#checkshow + label{
+#settings{
+	position: absolute;
+	top: 0px;
+	right: 0px;
+	padding: 0px 18px;
+	z-index: 1;
+	text-align: right;
+	background: var(--settings);
+	border: 2px solid var(--border);
+	border-top: 0;
+	border-right: 0;
+	border-bottom-left-radius: 3px;
+	line-height: initial;
+}
+#settings_options, #checkshow{
+	display:none;
+}
+
+#checkshow, #checkshow + label{
 	cursor:pointer
 }
 #checkshow + label{
@@ -88,45 +134,42 @@ code {
 	background-color: transparent;
 	width: initial;
 	text-align: center;
+	font-size: 50px;
+	line-height: initial;
 }
+#checkshow + label:before {
+	content:" ";
+}
+#checkshow + label:after {
+	content:"≡";
+}
+
 #checkshow:checked + label {
 	background-color: transparent;
+	font-size: inherit;
+	line-height: 55px;
 }
-#settings{
-	position: absolute;
-	top: auto;
-	right: auto;
-	left: auto;
-	background-color:snow;
+#checkshow:checked + label:before {
+	content:" ";
+	color: var(--close);
 }
-#settings_options, #checkshow{
-	display:none;
-}
-
-#checkshow + label:before,#checkshow + label::before{
-	content:"⚙ ";
-	color: slategray;
-}
-#checkshow + label:after,#checkshow + label::after{
-	content:" Settings";
-	color: slategray;
+#checkshow:checked + label:after {
+	content:"Close";
+	color: var(--close);
 }
 
-#checkshow:checked  + label:before,#checkshow:checked  + label::before{
-	content:"✖ ";
-	color: crimson;
-}
-#checkshow:checked + label:after,#checkshow:checked + label::after{
-	content:" Close";
-	color: crimson;
-}
-
-#checkshow:checked + label + #settings_options{
-	display:block;
+#checkshow:checked + label + #settings_options {
+	display: grid;
+	padding: 10px 20px;
+	grid-gap: 20px;
+	grid-template-columns: auto auto;
 }
 #settings_options {
-	width: 700px;
-	height: 600px;
+	/* width: 700px;
+	height: 600px; */
+}
+#settings-save {
+	grid-column: span 2;
 }
 
 /* Page-specific styles */
@@ -136,22 +179,22 @@ code {
 #logo{
 	position: fixed;
 	bottom: 0.7rem;
-	right: 0.5rem;
+	right: 1rem;
 	display: grid;
 	justify-content: center;
 	align-items: center;
 	gap: 0.5rem;
 	text-decoration: none !important;
-	background: var(--bg);
 	padding: 5px;
 	grid-auto-flow: column;
 }
 #logo img{
 	height: 2rem;
+	filter: invert(1) brightness(0.5);
 }
 #logo span{
 	font-size: 0.8rem;
-	color: var(--fg)
+	color: var(--midgray);
 }
 #login {
 	display: flex;
@@ -199,15 +242,40 @@ label[for=room]{
 
 /* Message posting page */
 
-iframe#post-frame{
+div#post-frame-parent {
+	display: grid;
+	width: calc( 300px + 50vw );
+	max-width: calc( 100% - 20px );
+	margin: 0 auto;
+	grid-auto-flow: column;
+	grid-template-columns: calc(100% - 210px) 210px;
+	justify-items: center;
+	align-items: center;
+	justify-content: center;
+	z-index: 1;
+	position: relative;
+}
+iframe#post-frame, iframe#upload-frame{
 	height: 60px;
 	width: 100%;
 	margin: 0 auto;
 }
+iframe#settings-frame {
+	position: fixed;
+	right: 0;
+	top: 0;
+	height: 300px;
+	width: 265px;
+}
 #post{
 	margin: 0 auto;
-	width: calc( 300px + 50vw );
-	max-width: calc( 100% - 20px );
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	height: 100%;
+}
+#upload{
+	margin: 0 auto;
 	display: flex;
 	justify-content: center;
 	align-items: center;
@@ -218,9 +286,11 @@ iframe#post-frame{
 /* Chat messages page */
 
 iframe#chat-frame{
-	height: calc( 100vh - 70px );
+	height: 100vh;
 	width: 100%;
-	margin: 0 auto;
+	position: absolute;
+	left: 0;
+	top: 0;
 }
 
 #chat{
@@ -228,14 +298,14 @@ iframe#chat-frame{
 	font-size: 18px;
 	width: calc( 300px + 50vw );
 	max-width: calc( 100% - 20px );
-	margin: 0 auto;
+	margin: 50px auto 0 auto;
 	display: flex;
 	flex-direction: column-reverse;
 }
 
 .message {
 	padding: 10px 5px;
-	border-top: 1px solid #88888833;
+	border-top: 1px solid var(--message-separator);
 	display: flex;
 }
 
@@ -257,11 +327,11 @@ iframe#chat-frame{
 }
 
 .message:not(.self) > .handle{
-	color: salmon;
+	color: var(--handle-color);
 }
 
 .message.self > .handle{
-	color: steelblue
+	color: var(--self-color)
 }
 
 .message .filedownload > :nth-child(2) {
@@ -270,10 +340,19 @@ iframe#chat-frame{
 	max-height: 25rem;
 }
 
+.message .filedownload > img:hover {
+	max-width: 100%;
+	max-height: 100%;
+}
+
 .message > div {
 	display: flex;
 	flex-direction: column;
 	flex-grow: 0;
+}
+
+.message.system .message-text {
+	color: var(--system-color);
 }
 
 .error-message {
@@ -294,15 +373,17 @@ iframe#chat-frame{
 	justify-content: center;
 	align-items: center;
 	justify-items: center;
-	border: 2px solid #0000002e;
+	border: 2px solid var(--border);
 	border-radius: 3px;
 	padding: 10px;
 }
 
+.filedownload span {
+	margin: 0;
+}
+
+
 @media only screen and (max-width: 1100px) {
-	* {
-		font-size: 14px;
-	}
 	form {
 		gap: 0px;
 	}
@@ -334,10 +415,6 @@ iframe#chat-frame{
 
 		width: 140px;
 	}
-	input, textarea, select, label[for="fileupload"]{
-		font-size: 12px;
-		padding: 5px;
-	}
 	.corners{
 		gap: 20px;
 	}
@@ -347,5 +424,73 @@ iframe#chat-frame{
 	}
 	.corners > a > img{
 		width: 15px;
+	}
+	.chat{
+		font-size: 14px;
+	}
+}
+
+/* Smaller text for smaller screen */
+
+@media only screen and (max-width: 600px) {
+	div#post-frame-parent{
+		grid-template-columns: calc(100% - 210px) 130px;
+	}
+	#chat * {
+		font-size: 14px;
+	}
+	.message {
+		padding: 7px 5px;
+	}
+	.message .filedownload > :nth-child(2) {
+		max-width: 100%;
+		max-height: 100%;
+	}
+}
+@media only screen and (max-width: 500px) {
+	div#post-frame-parent{
+		grid-template-columns: calc(100% - 130px) 130px;
+	}
+}
+@media only screen and (max-width: 199px) {
+	#uploadsubmit *, #uploadsubmit label[for="fileupload"] {
+		font-size: 12px;
+		padding: 5px;
+	}
+	.error-message{
+		font-size: 12px;
+	}
+}
+@media only screen and (max-width: 370px) {
+	#messagebox {
+		font-size: 12px;
+		padding: 5px;
+	}
+}
+
+@media only screen and (max-width: 1670px) {
+	iframe#settings-frame.snapbottom {
+		left: 0;
+		bottom: 0;
+		top: inherit;
+		width: 250px;
+		height: 190px;
+	}
+}
+
+@media only screen and (max-width: 250px) {
+	#settings.snapbottom {
+		padding: 0px 10px;
+		border-top-width: 2px;
+		border-right-width: 2px;
+		border-bottom-left-radius: initial;
+		border-top-right-radius: 3px;
+		top: inherit;
+		right: inherit;
+		left: 0;
+		bottom: 0;
+		border: 0;
+		border-top: 2px solid var(--border);
+		border-right: 2px solid var(--border);
 	}
 }

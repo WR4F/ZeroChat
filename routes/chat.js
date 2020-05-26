@@ -1,27 +1,25 @@
 const express = require("express")
+const fs = require('fs')
 const User = require("../classes/User")
+const config = require('../classes/Config')
 
-// support multipart/form-data
-const multer = require("multer")
-let storage = multer.memoryStorage()
-let upload = multer({ storage: storage })
+const Busboy = require('busboy')
 
-// The exact amount of bytes (1024 + 1) needed for a browser to take our (incomplete) response seriously
+// The exact amount of bytes (1024) needed for a browser to take our (incomplete) response seriously
 // and begin rendering the HTML sent so far, immediately
-const WHITESPACE_BITS =
-	"                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 "
+const WHITESPACE_BITS = " ".repeat(1024)
 
-const DEFAULT_ROOM = "hallway" // TODO when loading from file, needs to be sanitized
-const MAX_MESSAGE_LENGTH = 200
+const MAX_MESSAGE_LENGTH = 300
 const MAX_FILE_SIZE = 5242880 // 5 Mb
 const MAX_HANDLE_LENGTH = 15
 const MAX_PASSCODE_LENGTH = 64
 const MAX_ROOMNAME_LENGTH = 24
 const EXPECTED_TOKEN_LENGTH = 60 // length of crypto.js hash
-const URL_PREFIX = '/' // TODO support any prefix, replace all / in ejs files with var from cfg file
+const URL_PREFIX = config.urlPrefix // TODO Support any prefix, replace all / in ejs files with var from cfg file
 const ROUTES = {
 	MAIN: '',
-	UPLOAD_MESSAGE: '_upload-message',
+	POST_MESSAGE: '_post-message',
+	UPLOAD_FILE: '_upload-file',
 	CHAT_MESSAGES: '_view-messages',
 	SETTINGS: '_settings',
 }
@@ -33,9 +31,11 @@ const VIEWS = {
 	CHATROOM: 'chatroom',
 	ERROR: 'error',
 	WRITE_MESSAGE: 'write-message',
+	UPLOAD: 'upload-file',
 	NEW_MESSAGE: 'new-message',
 	VIEW_MESSAGES: 'view-messages',
 	ERROR_MESSAGE: 'error-message',
+	SETTINGS: 'settings',
 }
 
 const ERRORS = {
@@ -43,18 +43,41 @@ const ERRORS = {
 	INVALID_REQUEST: { message: "Invalid Request", error: "400" },
 }
 
-let users = []
+let defaultRoom = "hallway"
 
+const ROOMS_FILE = "rooms.txt"
+const FALLBACK_DEFAULT_ROOM = [defaultRoom] // TODO when loading from file, needs to be sanitized
+
+let roomsList = []
+let users = []
 let router = express.Router()
 
+const getRooms = () => {
+	return new Promise((resolve, reject) => {
+		fs.readFile(ROOMS_FILE, 'utf8', (err, data) => {
+			if (err) throw err;
+			if (data == null || data == []) {
+				console.error("Error: " + ROOMS_FILE + " is empty or invalid, it should be a list of default rooms seperated by lines. Defaulting to /" + FALLBACK_DEFAULT_ROOM[0]);
+				reject()
+				process.exit(1)
+			} else {
+				resolve(data.split(/\r?\n/))
+			}
+		})
+	})
+}
 
 const broadcast = (user, message, room, file = undefined) => {
 	return new Promise((resolve, reject) => {
-		if (typeof message != "string" || message.trim() == '') {
+
+		// A second check before sending. It should not be possible to hit this branch
+		if ((typeof message != "string" || message.trim() == '') && !file) {
 			reject("Message is blank or invalid")
+			console.warn("User managed to send a post request with no file or message and pass inital checks!");
+			return user.disconnect()
 		}
 
-		// TODO Extend this to support showing images or files in different ways
+		// TODO Extend this to support showing images or files in different ways depending on settings
 		let fileData = {
 			buffer: undefined,
 			type: undefined,
@@ -62,10 +85,14 @@ const broadcast = (user, message, room, file = undefined) => {
 			mimetype: undefined
 		}
 		if (file) {
-			fileData.buffer = file.buffer.toString("base64")
-			fileData.type = file.mimetype.substr(0, file.mimetype.indexOf('/'))
-			fileData.name = file.originalname
-			fileData.mimetype = file.mimetype
+			if (file.buffer && file.buffer.length !== 0) {
+				fileData.buffer = file.buffer.toString("base64")
+				fileData.type = file.mimetype.substr(0, file.mimetype.indexOf('/'))
+				fileData.name = file.originalname
+				fileData.mimetype = file.mimetype
+			} else {
+				return false
+			}
 		}
 		for (const iUser of users) {
 			if (iUser.room !== room) {
@@ -74,7 +101,8 @@ const broadcast = (user, message, room, file = undefined) => {
 			let messageType = "user"
 			let postHandle = ""
 			let postTrip = ""
-			if (user == null) { // If the 'user' param is null, that means it's a system message
+			if (user == null) {
+				// If the 'user' param is null, that means it's a system message
 				messageType = "system"
 			} else {
 				postHandle = user.handle
@@ -82,7 +110,8 @@ const broadcast = (user, message, room, file = undefined) => {
 			}
 
 			if (iUser.res.messages) {
-				if (user && user.token == iUser.token) { // Same user who wrote the message
+				if (user && user.token == iUser.token) {
+					// Same user who wrote the message
 					iUser.res.messages.render(VIEWS.NEW_MESSAGE,
 						{
 							handle: iUser.handle,
@@ -98,7 +127,8 @@ const broadcast = (user, message, room, file = undefined) => {
 						(err, html) => {
 							iUser.res.messages.write(html)
 						})
-				} else { // Other user in chat
+				} else {
+					// Other user in chat
 					iUser.res.messages.render(VIEWS.NEW_MESSAGE,
 						{
 							handle: postHandle,
@@ -159,13 +189,10 @@ let disconnectUser = (user) => {
 }
 
 let getUserByToken = (token) => {
-	// TODO: Needs to optionally filter by room? Or is server-wide check ok? Tokens should be unique
-	let user = users.filter((user) => user.token === token)[0]
-	return user
+	return users.filter((user) => user.token === token)[0]
 }
 
 let getUserByHandle = (handle, room) => {
-	// TODO: Needs to optionally filter by room
 	let user = undefined
 	if (room) {
 		user = users.filter((user) => user.handle === handle && user.room === room)[0]
@@ -173,6 +200,19 @@ let getUserByHandle = (handle, room) => {
 		user = users.filter((user) => user.handle === handle)[0]
 	}
 	return user
+}
+
+router.errorWithPostToken = (err, req, res) => {
+	let user = getUserByToken(req.body.token)
+	if (!user) { return res.render(VIEWS.ERROR, ERRORS.INVALID_TOKEN) }
+
+	return res.render(VIEWS.LAYOUT, {
+		page: VIEWS.ERROR_MESSAGE,
+		url: "_hidden",
+		error: err.message,
+		user: user,
+		redirect: URL_PREFIX + ROUTES.UPLOAD_FILE + "?token=" + req.body.token
+	})
 }
 
 // Set headers
@@ -186,81 +226,161 @@ router.all("*", (req, res, next) => {
 
 // POST REQUEST VALIDATION
 // Uses "handle", "passcode", "room", "theme", "url"
-router.post("*", upload.single('fileupload'), (req, res, next) => {
-	if (req.body.handle && req.body.passcode && req.body.theme) {
-		req.body.handle = req.body.handle.trim()
-		req.body.passcode = req.body.passcode.trim()
-		req.body.theme = req.body.theme.trim()
-		req.body.room = sanitizeRoomName(req.body.room)
+router.post("*", async (req, res, next) => {
+	let upload = new Busboy({ headers: req.headers })
+	new Promise((resolve, reject) => {
+		upload.on('file', function (fieldname, file, filename, encoding, mimetype) {
+			req.file = {
+				buffer: new Buffer.alloc(0)
+			}
+			let fileLoadedSize = 0
+			file.on('data', function (data) {
+				fileLoadedSize += data.length
+				if (fileLoadedSize > MAX_FILE_SIZE) {
+					// File too large
+					file.emit('end')
+					this.removeAllListeners()
+					req.file.buffer = null
+					req.file.mimetype = mimetype
+					req.file.encoding = encoding
+					req.file.originalname = filename
+					req.file.size = fileLoadedSize
+				} else {
+					req.file.buffer = Buffer.concat([req.file.buffer, data])
+				}
+			})
+			file.on('end', function () {
+				console.log('File [' + fieldname + '] Finished')
+				this.removeAllListeners()
+				req.file.mimetype = mimetype
+				req.file.encoding = encoding
+				req.file.originalname = filename
+				req.file.size = fileLoadedSize
+			})
+		})
+		upload.on('field', function (fieldname, val, fieldnameTruncated, valTruncated, encoding, mimetype) {
+			console.log('Field [' + fieldname + ']: value: ' + val)
+			req.body[fieldname] = val
+		})
+		upload.on('finish', function () {
+			console.log('Done parsing form!');
+			return resolve()
+		})
+	}).then(() => {
+		req.body.settings = (req.body.settings == 'true')
+		if (req.body.handle && req.body.passcode && req.body.theme) {
+			req.body.handle = req.body.handle.trim()
+			req.body.passcode = req.body.passcode.trim()
+			req.body.theme = req.body.theme.trim()
+			req.body.room = sanitizeRoomName(req.body.room)
 
-		// No room selected? Use the default one, if any
-		if (req.body.room === "" && DEFAULT_ROOM) {
-			req.body.room = DEFAULT_ROOM
+			if (!config.isValidTheme(req.body.theme)) {
+				return res.render(VIEWS.LAYOUT, {
+					page: VIEWS.ERROR_MESSAGE,
+					url: "_hidden",
+					error: "Invalid theme",
+					redirect: URL_PREFIX
+				})
+			}
+
+			// No room selected? Use the default one, if any
+			if (req.body.room === "" && defaultRoom) {
+				req.body.room = defaultRoom
+			}
 		}
-		// TODO: check if theme in list of valid themes
-	}
 
-	if (req.url.substr(0, 2) !== URL_PREFIX + "_") {
-		// Disconnect if user is logging in with a name/passcode too long or blank
-		if (
-			(req.body.handle === ""
+		if (req.url.substr(0, 2) !== URL_PREFIX + "_") {
+			// Check if the user is sending an update to their settings or not
+			if (req.body.settings) {
+				// Reload front page with settings applied
+				return res.render(VIEWS.LAYOUT, {
+					page: VIEWS.FRONT_PAGE,
+					handleMaxlen: MAX_HANDLE_LENGTH,
+					passMaxlen: MAX_PASSCODE_LENGTH,
+					roomNameMaxlen: MAX_ROOMNAME_LENGTH,
+					theme: req.body.theme || User.DEFAULT_THEME,
+					url: sanitizeRoomName(req.url),
+					rooms: roomsList
+				})
+			} else if (req.body.handle === ""
 				|| req.body.passcode === ""
-				|| req.body.room === "")) {
-			// return res.render(VIEWS.ERROR, ERRORS.INVALID_REQUEST, (err, html) => res.end(html + "Field cannot be blank"))
-			return res.render(VIEWS.LAYOUT, {
-				page: VIEWS.ERROR_MESSAGE,
-				url: "_hidden",
-				error: "Message too long",
-				redirect: URL_PREFIX
-			})
-		} else if (req.body.handle.length > MAX_HANDLE_LENGTH
-			|| req.body.passcode.length > MAX_PASSCODE_LENGTH
-			|| req.body.room.length > MAX_ROOMNAME_LENGTH) {
-			// return res.render(VIEWS.ERROR, ERRORS.INVALID_REQUEST, (err, html) => res.end(html + "Field too long"))
-			return res.render(VIEWS.LAYOUT, {
-				page: VIEWS.ERROR_MESSAGE,
-				url: "_hidden",
-				error: "A field you entered was too long.",
-				redirect: URL_PREFIX
-			})
-		} else if (getUserByHandle(req.body.handle, req.body.room) != undefined) {
-			// return res.render(VIEWS.ERROR, ERRORS.INVALID_REQUEST, (err, html) => res.end(html + "Name taken"))
-			return res.render(VIEWS.LAYOUT, {
-				page: VIEWS.ERROR_MESSAGE,
-				url: "_hidden",
-				error: "Someone with that handle is already in /" + req.body.room,
-				redirect: URL_PREFIX
-			})
+				|| req.body.room === "") {
+				// User is missing a required field
+				return res.render(VIEWS.LAYOUT, {
+					page: VIEWS.ERROR_MESSAGE,
+					url: "_hidden",
+					error: "Field missing",
+					redirect: URL_PREFIX
+				})
+			} else if ((req.body.handle && req.body.handle.length > MAX_HANDLE_LENGTH)
+				|| (req.body.passcode && req.body.passcode.length > MAX_PASSCODE_LENGTH)
+				|| (req.body.room && req.body.room.length > MAX_ROOMNAME_LENGTH)) {
+				// Disconnect if user is logging in with a name/passcode too long or blank
+				return res.render(VIEWS.LAYOUT, {
+					page: VIEWS.ERROR_MESSAGE,
+					url: "_hidden",
+					error: "A field you entered was too long",
+					redirect: URL_PREFIX
+				})
+			} else if (getUserByHandle(req.body.handle, req.body.room) != undefined) {
+				// Disconnect user is their name is already taken
+				return res.render(VIEWS.LAYOUT, {
+					page: VIEWS.ERROR_MESSAGE,
+					url: "_hidden",
+					error: "Someone with that handle is already in /" + req.body.room,
+					redirect: URL_PREFIX
+				})
+			}
+		} else if (req.url.startsWith(URL_PREFIX + ROUTES.POST_MESSAGE)) {
+			let user = getUserByToken(req.query.token)
+			if (!user) { return res.render(VIEWS.ERROR, ERRORS.INVALID_TOKEN) }
+
+			// Disconnect if user is sending a blank message without a file, or a message too large
+			if (req.body.message == null || req.body.message.trim() == "") {
+				// no message
+				return res.render(VIEWS.LAYOUT, {
+					page: VIEWS.ERROR_MESSAGE,
+					url: "_hidden",
+					error: "Message required",
+					user: user,
+					redirect: URL_PREFIX + ROUTES.POST_MESSAGE + "?token=" + req.query.token
+				})
+			} else if (req.body.message.length > MAX_MESSAGE_LENGTH) {
+				// message too large
+				return res.render(VIEWS.LAYOUT, {
+					page: VIEWS.ERROR_MESSAGE,
+					url: "_hidden",
+					error: "Message too long",
+					user: user,
+					redirect: URL_PREFIX + ROUTES.POST_MESSAGE + "?token=" + req.query.token
+				})
+			}
+		} else if (req.url.startsWith(URL_PREFIX + ROUTES.UPLOAD_FILE)) {
+			let user = getUserByToken(req.query.token)
+			if (!user) { return res.render(VIEWS.ERROR, ERRORS.INVALID_TOKEN) }
+			if (req.file != null && req.file.size > MAX_FILE_SIZE) {
+				// file too large
+				return res.render(VIEWS.LAYOUT, {
+					page: VIEWS.ERROR_MESSAGE,
+					url: "_hidden",
+					error: "File too large",
+					user: user,
+					redirect: URL_PREFIX + ROUTES.UPLOAD_FILE + "?token=" + req.query.token
+				})
+			} else if (req.file == null || req.file.size == 0) {
+				// file required
+				return res.render(VIEWS.LAYOUT, {
+					page: VIEWS.ERROR_MESSAGE,
+					url: "_hidden",
+					error: "No file chosen",
+					user: user,
+					redirect: URL_PREFIX + ROUTES.UPLOAD_FILE + "?token=" + req.query.token
+				})
+			}
 		}
-	} else if (req.url.startsWith(URL_PREFIX + ROUTES.UPLOAD_MESSAGE)) {
-		// Disconnect if user is sending a blank message without a file, or a message too large
-		if (req.body.message.length > MAX_MESSAGE_LENGTH) {
-			// message too large
-			return res.render(VIEWS.LAYOUT, {
-				page: VIEWS.ERROR_MESSAGE,
-				url: "_hidden",
-				error: "Message too long",
-				redirect: URL_PREFIX + ROUTES.UPLOAD_MESSAGE + "?token=" + req.query.token
-			})
-		} else if (req.file != null && req.file.size > MAX_FILE_SIZE) {
-			// file too large
-			return res.render(VIEWS.LAYOUT, {
-				page: VIEWS.ERROR_MESSAGE,
-				url: "_hidden",
-				error: "File too large",
-				redirect: URL_PREFIX + ROUTES.UPLOAD_MESSAGE + "?token=" + req.query.token
-			})
-		} else if ((req.body.message == null || req.body.message.trim() == "") && req.file == null) {
-			// no message or file
-			return res.render(VIEWS.LAYOUT, {
-				page: VIEWS.ERROR_MESSAGE,
-				url: "_hidden",
-				error: "Message or file required",
-				redirect: URL_PREFIX + ROUTES.UPLOAD_MESSAGE + "?token=" + req.query.token
-			})
-		}
-	}
-	next()
+		next()
+	})
+	req.pipe(upload);
 })
 
 /* MAIN LOGIN PAGE */
@@ -274,7 +394,8 @@ router.get(MAIN_LOGIN_REGEX, (req, res, next) => {
 		passMaxlen: MAX_PASSCODE_LENGTH,
 		roomNameMaxlen: MAX_ROOMNAME_LENGTH,
 		theme: User.DEFAULT_THEME,
-		url: req.url
+		url: req.url,
+		rooms: roomsList
 	}, (err, html) => {
 		res.end(html)
 	})
@@ -308,18 +429,21 @@ router.post(URL_PREFIX + ROUTES.MAIN, (req, res, next) => {
 			{
 				page: VIEWS.CHATROOM,
 				user: user,
-				url: user.room
-			},
-			(err, html) => {
-				user.res.chatroom.end(html)
+				url: user.room,
+				postmsg: URL_PREFIX + ROUTES.POST_MESSAGE,
+				uploadfile: URL_PREFIX + ROUTES.UPLOAD_FILE,
+				chatmsgs: URL_PREFIX + ROUTES.CHAT_MESSAGES,
+				settingsPanel: URL_PREFIX + ROUTES.SETTINGS,
+				snapbottom: true
 			}
 		)
 	})
-	// TODO: gotta timeout and delete the user if they connect to this page but never connect to the messages iframe
+	// !!! gotta timeout and delete the user if they connect to this page but never connect to the messages iframe
 })
 
-/* UPLOAD MSG IFRAME */
-router.get(URL_PREFIX + ROUTES.UPLOAD_MESSAGE, (req, res, next) => {
+
+/* POST MSG IFRAME */
+router.get(URL_PREFIX + ROUTES.POST_MESSAGE, (req, res, next) => {
 	let user = getUserByToken(req.query.token)
 	if (!user) { return res.render(VIEWS.ERROR, ERRORS.INVALID_TOKEN) }
 	user.res.post = res
@@ -329,20 +453,58 @@ router.get(URL_PREFIX + ROUTES.UPLOAD_MESSAGE, (req, res, next) => {
 		user: user,
 		maxlen: MAX_MESSAGE_LENGTH,
 		placeholder: user.nextMsgPlaceholder(req)
-	},
-		(err, html) => {
-			user.res.post.end(html)
-		})
+	}, (err, html) => { user.res.post.end(html) })
 })
-
-/* SUBMITTING UPLOAD MSG IFRAME */
-router.post(URL_PREFIX + ROUTES.UPLOAD_MESSAGE, (req, res, next) => {
+/* SUBMITTING POST MSG IFRAME */
+router.post(URL_PREFIX + ROUTES.POST_MESSAGE, (req, res, next) => {
 	let user = getUserByToken(req.body.token)
 	if (!user) { return res.render(VIEWS.ERROR, ERRORS.INVALID_TOKEN) }
 	user.res.post = res
 
 	// Show the message to all users who have loaded the chatroom
-	broadcast(user, req.body.message, user.room, req.file)
+	broadcast(user, req.body.message, user.room)
+		.then((status) => {
+			// Went ok
+			return status
+		})
+		.catch((status) => {
+			// TODO: Issue occurs?, address problem
+			debugger
+			return status
+		})
+		.finally((status) => {
+			user.res.post.render(VIEWS.LAYOUT, {
+				page: VIEWS.WRITE_MESSAGE,
+				user: user,
+				maxlen: MAX_MESSAGE_LENGTH,
+				placeholder: user.nextMsgPlaceholder(req)
+			}, (err, html) => { return user.res.post.end(html) })
+		})
+})
+
+
+/* UPLOAD FILE IFRAME */
+router.get(URL_PREFIX + ROUTES.UPLOAD_FILE, (req, res, next) => {
+	let user = getUserByToken(req.query.token)
+	if (!user) { return res.render(VIEWS.ERROR, ERRORS.INVALID_TOKEN) }
+	user.res.upload = res
+
+	user.res.upload.render(
+		VIEWS.LAYOUT,
+		{
+			page: VIEWS.UPLOAD,
+			user: user
+		}
+	)
+})
+/* SUBMITTING UPLOAD FILE IFRAME */
+router.post(URL_PREFIX + ROUTES.UPLOAD_FILE, (req, res, next) => {
+	let user = getUserByToken(req.body.token)
+	if (!user) { return res.render(VIEWS.ERROR, ERRORS.INVALID_TOKEN) }
+	user.res.upload = res
+
+	// Show the file to all users who have loaded the chatroom
+	broadcast(user, "", user.room, req.file)
 		.then((status) => {
 			// Went ok
 			return status
@@ -352,17 +514,60 @@ router.post(URL_PREFIX + ROUTES.UPLOAD_MESSAGE, (req, res, next) => {
 			return status
 		})
 		.finally((status) => {
-			user.res.post.render(VIEWS.LAYOUT, {
-				page: VIEWS.WRITE_MESSAGE,
-				user: user,
-				maxlen: MAX_MESSAGE_LENGTH,
-				placeholder: user.nextMsgPlaceholder(req)
-			},
-				(err, html) => { return user.res.post.end(html) })
+			user.res.upload.render(VIEWS.LAYOUT, {
+				page: VIEWS.UPLOAD,
+				user: user
+			}, (err, html) => { return user.res.upload.end(html) })
 		})
 })
 
-/* MESSAGES IFRAME */
+
+/* SETTINGS IFRAME */
+router.get(URL_PREFIX + ROUTES.SETTINGS, (req, res, next) => {
+	let user = getUserByToken(req.query.token)
+	if (!user) { return res.render(VIEWS.ERROR, ERRORS.INVALID_TOKEN) }
+	user.res.settings = res
+
+	user.res.settings.render(
+		VIEWS.LAYOUT,
+		{
+			page: VIEWS.SETTINGS,
+			user: user,
+			theme: user.theme,
+			snapbottom: true,
+			redirect: URL_PREFIX + ROUTES.SETTINGS + "?token=" + req.query.token,
+		},
+		(err, html) => { return user.res.settings.end(html) }
+	)
+})
+/* SUBMITTING SETTINGS IFRAME */
+router.post(URL_PREFIX + ROUTES.SETTINGS, (req, res, next) => {
+	let user = getUserByToken(req.query.token)
+	if (!user) { return res.render(VIEWS.ERROR, ERRORS.INVALID_TOKEN) }
+	user.res.settings = res
+
+	if (user.theme !== req.body.theme) {
+		try {
+			user.setTheme(req.body.theme)
+			user.res.settings.render(
+				VIEWS.LAYOUT,
+				{
+					page: VIEWS.SETTINGS,
+					user: user,
+					theme: user.theme,
+					snapbottom: true,
+					redirect: URL_PREFIX + ROUTES.SETTINGS + "?token=" + req.query.token,
+				},
+				(err, html) => { return user.res.settings.end(html) }
+			)
+		} catch (error) {
+			// TODO display an error on page about invalid theme
+		}
+	}
+})
+
+
+/* MESSAGES IFRAME (STREAMED) */
 router.get(URL_PREFIX + ROUTES.CHAT_MESSAGES, (req, res, next) => {
 
 	// Find user
@@ -370,13 +575,14 @@ router.get(URL_PREFIX + ROUTES.CHAT_MESSAGES, (req, res, next) => {
 	if (!user) { return res.render(VIEWS.ERROR, ERRORS.INVALID_TOKEN) }
 	user.res.messages = res
 
+	// FIXME: If users refresh the page quickly, a ghost user will be stuck and still connected
 	// On disconnect, cancel ping keep-alive and remove user from list
 	req.on("close", () => {
 		// clearInterval(pingInterval)
 		disconnectUser(user)
 	})
 
-	user.res.messages.render(VIEWS.LAYOUT, { page: VIEWS.VIEW_MESSAGES }, (err, html) => {
+	user.res.messages.render(VIEWS.LAYOUT, { page: VIEWS.VIEW_MESSAGES, user: user }, (err, html) => {
 		user.res.messages.write(html)
 		user.res.messages.render(VIEWS.NEW_MESSAGE,
 			{
@@ -388,6 +594,7 @@ router.get(URL_PREFIX + ROUTES.CHAT_MESSAGES, (req, res, next) => {
 						.filter((iUser) => iUser.room === user.room)
 						.map((iUser) => iUser.handle)
 						.join(', '),
+				user: user,
 				timestamp: new Date().toUTCString()
 			},
 			(err, html) => {
@@ -397,11 +604,12 @@ router.get(URL_PREFIX + ROUTES.CHAT_MESSAGES, (req, res, next) => {
 
 		broadcast(null, user.handle + " (" + user.tripcode + ") joined /" + user.room + ".", user.room)
 
-		// A keep-alive ping, to prevent the connection from dropping
+		// A keep-alive ping, to prevent the connection from dropping (usually not needed)
 		// pingInterval = setInterval(() => {
 		// 	user.res.messages.ping()
-		// }, 1000)
+		// }, 20000)
 	})
 })
 
+getRooms().then(data => roomsList = data)
 module.exports = router

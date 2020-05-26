@@ -1,0 +1,13 @@
+:root {
+	--bg: #efefef;
+	--fg: #101010;
+	--border: #000000bd;
+	--message-separator: #88888833;
+	--handle-color: #fa8072;
+	--self-color: #4682b4;
+	--system-color: #25a771;
+	--code: #80808030;
+	--settings: #e5e5e5;
+	--close: #dc143c;
+	--dropdown-arrow: url('/images/downarrow_black.png');
+}
