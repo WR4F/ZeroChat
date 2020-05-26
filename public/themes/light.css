@@ -5,14 +5,9 @@
 	--message-separator: #88888833;
 	--handle-color: #fa8072;
 	--self-color: #4682b4;
-<<<<<<< HEAD
 	--system-color: #25a771;
 	--code: #80808030;
 	--settings: #e5e5e5;
-=======
-	--code: #80808030;
-	--settings: #d6d6d6;
->>>>>>> 5c6dfbd5920bf2ec9a74a57a179bf49f0bf57b24
 	--close: #dc143c;
 	--dropdown-arrow: url('/images/downarrow_black.png');
 }

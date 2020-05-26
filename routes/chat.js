@@ -3,21 +3,12 @@ const fs = require('fs')
 const User = require("../classes/User")
 const config = require('../classes/Config')
 
-<<<<<<< HEAD
 const Busboy = require('busboy')
-=======
-// support multipart/form-data
-const multer = require("multer")
->>>>>>> 5c6dfbd5920bf2ec9a74a57a179bf49f0bf57b24
 
 // The exact amount of bytes (1024) needed for a browser to take our (incomplete) response seriously
 // and begin rendering the HTML sent so far, immediately
 const WHITESPACE_BITS = " ".repeat(1024)
 
-<<<<<<< HEAD
-=======
-const DEFAULT_ROOM = "hallway" // TODO when loading from file, needs to be sanitized
->>>>>>> 5c6dfbd5920bf2ec9a74a57a179bf49f0bf57b24
 const MAX_MESSAGE_LENGTH = 300
 const MAX_FILE_SIZE = 5242880 // 5 Mb
 const MAX_HANDLE_LENGTH = 15
@@ -52,20 +43,11 @@ const ERRORS = {
 	INVALID_REQUEST: { message: "Invalid Request", error: "400" },
 }
 
-<<<<<<< HEAD
 let defaultRoom = "hallway"
 
 const ROOMS_FILE = "rooms.txt"
 const FALLBACK_DEFAULT_ROOM = [defaultRoom] // TODO when loading from file, needs to be sanitized
 
-=======
-const FALLBACK_DEFAULT_ROOM = ["Hallway"]
-const ROOMS_FILE = "rooms.txt"
-
-let storage = multer.memoryStorage()
-let upload = multer({ storage: storage, limits: { fileSize: MAX_FILE_SIZE, files: 1 } })
-
->>>>>>> 5c6dfbd5920bf2ec9a74a57a179bf49f0bf57b24
 let roomsList = []
 let users = []
 let router = express.Router()
@@ -244,7 +226,6 @@ router.all("*", (req, res, next) => {
 
 // POST REQUEST VALIDATION
 // Uses "handle", "passcode", "room", "theme", "url"
-<<<<<<< HEAD
 router.post("*", async (req, res, next) => {
 	let upload = new Busboy({ headers: req.headers })
 	new Promise((resolve, reject) => {
@@ -267,52 +248,6 @@ router.post("*", async (req, res, next) => {
 				} else {
 					req.file.buffer = Buffer.concat([req.file.buffer, data])
 				}
-=======
-router.post("*", upload.single('fileupload'), (req, res, next) => {
-	if (req.body.handle && req.body.passcode && req.body.theme) {
-		req.body.handle = req.body.handle.trim()
-		req.body.passcode = req.body.passcode.trim()
-		req.body.theme = req.body.theme.trim()
-		req.body.room = sanitizeRoomName(req.body.room)
-
-		if (!config.isValidTheme(req.body.theme)) {
-			return res.render(VIEWS.LAYOUT, {
-				page: VIEWS.ERROR_MESSAGE,
-				url: "_hidden",
-				error: "Invalid theme",
-				redirect: URL_PREFIX
-			})
-		}
-
-		// No room selected? Use the default one, if any
-		if (req.body.room === "" && DEFAULT_ROOM) {
-			req.body.room = DEFAULT_ROOM
-		}
-	}
-
-	if (req.url.substr(0, 2) !== URL_PREFIX + "_") {
-		// Disconnect if user is logging in with a name/passcode too long or blank
-		if (
-			(req.body.handle === ""
-				|| req.body.passcode === ""
-				|| req.body.room === "")) {
-			// return res.render(VIEWS.ERROR, ERRORS.INVALID_REQUEST, (err, html) => res.end(html + "Field cannot be blank"))
-			return res.render(VIEWS.LAYOUT, {
-				page: VIEWS.ERROR_MESSAGE,
-				url: "_hidden",
-				error: "Message too long",
-				redirect: URL_PREFIX
-			})
-		} else if (req.body.handle.length > MAX_HANDLE_LENGTH
-			|| req.body.passcode.length > MAX_PASSCODE_LENGTH
-			|| req.body.room.length > MAX_ROOMNAME_LENGTH) {
-			// return res.render(VIEWS.ERROR, ERRORS.INVALID_REQUEST, (err, html) => res.end(html + "Field too long"))
-			return res.render(VIEWS.LAYOUT, {
-				page: VIEWS.ERROR_MESSAGE,
-				url: "_hidden",
-				error: "A field you entered was too long.",
-				redirect: URL_PREFIX
->>>>>>> 5c6dfbd5920bf2ec9a74a57a179bf49f0bf57b24
 			})
 			file.on('end', function () {
 				console.log('File [' + fieldname + '] Finished')
@@ -353,7 +288,6 @@ router.post("*", upload.single('fileupload'), (req, res, next) => {
 				req.body.room = defaultRoom
 			}
 		}
-<<<<<<< HEAD
 
 		if (req.url.substr(0, 2) !== URL_PREFIX + "_") {
 			// Check if the user is sending an update to their settings or not
@@ -443,54 +377,6 @@ router.post("*", upload.single('fileupload'), (req, res, next) => {
 					redirect: URL_PREFIX + ROUTES.UPLOAD_FILE + "?token=" + req.query.token
 				})
 			}
-=======
-	} else if (req.url.startsWith(URL_PREFIX + ROUTES.POST_MESSAGE)) {
-		let user = getUserByToken(req.query.token)
-		if (!user) { return res.render(VIEWS.ERROR, ERRORS.INVALID_TOKEN) }
-
-		// Disconnect if user is sending a blank message without a file, or a message too large
-		if (req.body.message.length > MAX_MESSAGE_LENGTH) {
-			// message too large
-			return res.render(VIEWS.LAYOUT, {
-				page: VIEWS.ERROR_MESSAGE,
-				url: "_hidden",
-				error: "Message too long",
-				user: user,
-				redirect: URL_PREFIX + ROUTES.POST_MESSAGE + "?token=" + req.query.token
-			})
-		} else if ((req.body.message == null || req.body.message.trim() == "") && req.file == null) {
-			// no message
-			return res.render(VIEWS.LAYOUT, {
-				page: VIEWS.ERROR_MESSAGE,
-				url: "_hidden",
-				error: "Message required",
-				user: user,
-				redirect: URL_PREFIX + ROUTES.POST_MESSAGE + "?token=" + req.query.token
-			})
-		}
-	} else if (req.url.startsWith(URL_PREFIX + ROUTES.UPLOAD_FILE)) {
-		let user = getUserByToken(req.query.token)
-		if (!user) { return res.render(VIEWS.ERROR, ERRORS.INVALID_TOKEN) }
-
-		if (req.file == null) {
-			// file required
-			return res.render(VIEWS.LAYOUT, {
-				page: VIEWS.ERROR_MESSAGE,
-				url: "_hidden",
-				error: "No file chosen",
-				user: user,
-				redirect: URL_PREFIX + ROUTES.UPLOAD_FILE + "?token=" + req.query.token
-			})
-		} else if (req.file != null && req.file.size > MAX_FILE_SIZE) {
-			// file too large
-			return res.render(VIEWS.LAYOUT, {
-				page: VIEWS.ERROR_MESSAGE,
-				url: "_hidden",
-				error: "File too large",
-				user: user,
-				redirect: URL_PREFIX + ROUTES.UPLOAD_FILE + "?token=" + req.query.token
-			})
->>>>>>> 5c6dfbd5920bf2ec9a74a57a179bf49f0bf57b24
 		}
 		next()
 	})
@@ -546,25 +432,15 @@ router.post(URL_PREFIX + ROUTES.MAIN, (req, res, next) => {
 				url: user.room,
 				postmsg: URL_PREFIX + ROUTES.POST_MESSAGE,
 				uploadfile: URL_PREFIX + ROUTES.UPLOAD_FILE,
-<<<<<<< HEAD
 				chatmsgs: URL_PREFIX + ROUTES.CHAT_MESSAGES,
 				settingsPanel: URL_PREFIX + ROUTES.SETTINGS,
 				snapbottom: true
 			}
-=======
-				chatmsgs: URL_PREFIX + ROUTES.CHAT_MESSAGES
-			},
-			(err, html) => { user.res.chatroom.end(html) }
->>>>>>> 5c6dfbd5920bf2ec9a74a57a179bf49f0bf57b24
 		)
 	})
 	// !!! gotta timeout and delete the user if they connect to this page but never connect to the messages iframe
 })
 
-<<<<<<< HEAD
-
-=======
->>>>>>> 5c6dfbd5920bf2ec9a74a57a179bf49f0bf57b24
 /* POST MSG IFRAME */
 router.get(URL_PREFIX + ROUTES.POST_MESSAGE, (req, res, next) => {
 	let user = getUserByToken(req.query.token)
@@ -578,10 +454,6 @@ router.get(URL_PREFIX + ROUTES.POST_MESSAGE, (req, res, next) => {
 		placeholder: user.nextMsgPlaceholder(req)
 	}, (err, html) => { user.res.post.end(html) })
 })
-<<<<<<< HEAD
-=======
-
->>>>>>> 5c6dfbd5920bf2ec9a74a57a179bf49f0bf57b24
 /* SUBMITTING POST MSG IFRAME */
 router.post(URL_PREFIX + ROUTES.POST_MESSAGE, (req, res, next) => {
 	let user = getUserByToken(req.body.token)
@@ -606,7 +478,6 @@ router.post(URL_PREFIX + ROUTES.POST_MESSAGE, (req, res, next) => {
 				maxlen: MAX_MESSAGE_LENGTH,
 				placeholder: user.nextMsgPlaceholder(req)
 			}, (err, html) => { return user.res.post.end(html) })
-<<<<<<< HEAD
 		})
 })
 
@@ -646,13 +517,10 @@ router.post(URL_PREFIX + ROUTES.UPLOAD_FILE, (req, res, next) => {
 				page: VIEWS.UPLOAD,
 				user: user
 			}, (err, html) => { return user.res.upload.end(html) })
-=======
->>>>>>> 5c6dfbd5920bf2ec9a74a57a179bf49f0bf57b24
 		})
 })
 
 
-<<<<<<< HEAD
 /* SETTINGS IFRAME */
 router.get(URL_PREFIX + ROUTES.SETTINGS, (req, res, next) => {
 	let user = getUserByToken(req.query.token)
@@ -699,50 +567,6 @@ router.post(URL_PREFIX + ROUTES.SETTINGS, (req, res, next) => {
 
 
 /* MESSAGES IFRAME (STREAMED) */
-=======
-/* UPLOAD FILE IFRAME */
-router.get(URL_PREFIX + ROUTES.UPLOAD_FILE, (req, res, next) => {
-	let user = getUserByToken(req.query.token)
-	if (!user) { return res.render(VIEWS.ERROR, ERRORS.INVALID_TOKEN) }
-	user.res.upload = res
-
-	user.res.upload.render(
-		VIEWS.LAYOUT,
-		{
-			page: VIEWS.UPLOAD,
-			user: user
-		},
-		(err, html) => { user.res.upload.end(html) }
-	)
-})
-
-/* SUBMITTING UPLOAD FILE IFRAME */
-router.post(URL_PREFIX + ROUTES.UPLOAD_FILE, (req, res, next) => {
-	let user = getUserByToken(req.body.token)
-	if (!user) { return res.render(VIEWS.ERROR, ERRORS.INVALID_TOKEN) }
-	user.res.post = res
-
-	// Show the file to all users who have loaded the chatroom
-	broadcast(user, "", user.room, req.file)
-		.then((status) => {
-			// Went ok
-			return status
-		})
-		.catch((status) => {
-			// TODO: Issue occurs?, address problem
-			return status
-		})
-		.finally((status) => {
-			user.res.post.render(VIEWS.LAYOUT, {
-				page: VIEWS.UPLOAD,
-				user: user
-			}, (err, html) => { return user.res.post.end(html) })
-		})
-})
-
-
-/* MESSAGES IFRAME */
->>>>>>> 5c6dfbd5920bf2ec9a74a57a179bf49f0bf57b24
 router.get(URL_PREFIX + ROUTES.CHAT_MESSAGES, (req, res, next) => {
 
 	// Find user

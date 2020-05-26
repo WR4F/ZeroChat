@@ -12,20 +12,14 @@ let app = express()
 app.set("views", path.join(__dirname, "views"))
 app.set("view engine", "ejs")
 
-<<<<<<< HEAD
 config.loadConfig()
-.then(() => {
-	app.locals.config = config
-})
-.catch((error) => {
-	console.error(error)
-	exit(1)
-})
-=======
-config.loadThemes().then(() => {
-	app.locals.config = config
-})
->>>>>>> 5c6dfbd5920bf2ec9a74a57a179bf49f0bf57b24
+	.then(() => {
+		app.locals.config = config
+	})
+	.catch((error) => {
+		console.error(error)
+		exit(1)
+	})
 
 // NOTE might have to blacklist things like robots.txt and this from /room names
 app.use('/favicon.ico', express.static(path.join(__dirname, 'public', 'images', 'favicon.ico')));
