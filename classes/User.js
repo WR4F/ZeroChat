@@ -20,7 +20,11 @@ module.exports = class User {
 		this.tripcode = crypto.genTripcode(pass) // identifying tripcode
 		this.theme = theme // preferred theme
 		this.room = room // the room the user is in
+<<<<<<< HEAD
 		this.res = { "chatroom": res, "post": null, "upload": null, "messages": null, "settings": null } // response object
+=======
+		this.res = { "chatroom": res, "post": null, "upload": null, "messages": null } // response object
+>>>>>>> 5c6dfbd5920bf2ec9a74a57a179bf49f0bf57b24
 		this.placeholderIter = 0
 	}
 
@@ -52,7 +56,11 @@ module.exports = class User {
 		}
 		if (this.res.upload) {
 			try {
+<<<<<<< HEAD
 				this.res.upload
+=======
+				this.res.messages
+>>>>>>> 5c6dfbd5920bf2ec9a74a57a179bf49f0bf57b24
 			} catch (error) { }
 		}
 		if (this.res.messages) {

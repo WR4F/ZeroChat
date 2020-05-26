@@ -164,10 +164,7 @@ code {
 	grid-gap: 20px;
 	grid-template-columns: auto auto;
 }
-#settings_options {
-	/* width: 700px;
-	height: 600px; */
-}
+
 #settings-save {
 	grid-column: span 2;
 }
@@ -492,5 +489,36 @@ iframe#chat-frame{
 		border: 0;
 		border-top: 2px solid var(--border);
 		border-right: 2px solid var(--border);
+	}
+}
+
+/* Smaller text for smaller screen */
+
+@media only screen and (max-width: 600px) {
+	div#post-frame-parent{
+		grid-template-columns: calc(100% - 210px) 130px;
+	}
+	#chat * {
+		font-size: 14px;
+	}
+	.message {
+		padding: 7px 5px;
+	}
+}
+@media only screen and (max-width: 500px) {
+	div#post-frame-parent{
+		grid-template-columns: calc(100% - 130px) 130px;
+	}
+}
+@media only screen and (max-width: 199px) {
+	#uploadsubmit *, #uploadsubmit label[for="fileupload"]{
+		font-size: 12px;
+		padding: 5px;
+	}
+}
+@media only screen and (max-width: 370px) {
+	#messagebox {
+		font-size: 12px;
+		padding: 5px;
 	}
 }
