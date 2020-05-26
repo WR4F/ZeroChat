@@ -179,7 +179,7 @@ code {
 #logo{
 	position: fixed;
 	bottom: 0.7rem;
-	right: 0.5rem;
+	right: 1rem;
 	display: grid;
 	justify-content: center;
 	align-items: center;
@@ -288,8 +288,9 @@ iframe#settings-frame {
 iframe#chat-frame{
 	height: 100vh;
 	width: 100%;
-	margin: 0 auto;
-	margin-top: -60px;
+	position: absolute;
+	left: 0;
+	top: 0;
 }
 
 #chat{
@@ -297,7 +298,7 @@ iframe#chat-frame{
 	font-size: 18px;
 	width: calc( 300px + 50vw );
 	max-width: calc( 100% - 20px );
-	margin: 0 auto;
+	margin: 50px auto 0 auto;
 	display: flex;
 	flex-direction: column-reverse;
 }
@@ -441,6 +442,10 @@ iframe#chat-frame{
 	.message {
 		padding: 7px 5px;
 	}
+	.message .filedownload > :nth-child(2) {
+		max-width: 100%;
+		max-height: 100%;
+	}
 }
 @media only screen and (max-width: 500px) {
 	div#post-frame-parent{
@@ -448,9 +453,12 @@ iframe#chat-frame{
 	}
 }
 @media only screen and (max-width: 199px) {
-	#uploadsubmit *, #uploadsubmit label[for="fileupload"]{
+	#uploadsubmit *, #uploadsubmit label[for="fileupload"] {
 		font-size: 12px;
 		padding: 5px;
+	}
+	.error-message{
+		font-size: 12px;
 	}
 }
 @media only screen and (max-width: 370px) {
