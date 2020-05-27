@@ -22,6 +22,7 @@ module.exports = class User {
 		this.room = room // the room the user is in
 		this.res = { "chatroom": res, "post": null, "upload": null, "messages": null, "settings": null } // response object
 		this.placeholderIter = 0
+		this.joinTimeoutInterval = null
 	}
 
 	toString() {

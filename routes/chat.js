@@ -43,10 +43,9 @@ const ERRORS = {
 	INVALID_REQUEST: { message: "Invalid Request", error: "400" },
 }
 
-let defaultRoom = "hallway"
-
+let defaultRoom = config.DEFAULT_ROOM
 const ROOMS_FILE = "rooms.txt"
-const FALLBACK_DEFAULT_ROOM = [defaultRoom] // TODO when loading from file, needs to be sanitized
+const FALLBACK_DEFAULT_ROOM = [defaultRoom]
 
 let roomsList = []
 let users = []
@@ -55,9 +54,9 @@ let router = express.Router()
 const getRooms = () => {
 	return new Promise((resolve, reject) => {
 		fs.readFile(ROOMS_FILE, 'utf8', (err, data) => {
-			if (err) throw err;
+			if (err) throw err
 			if (data == null || data == []) {
-				console.error("Error: " + ROOMS_FILE + " is empty or invalid, it should be a list of default rooms seperated by lines. Defaulting to /" + FALLBACK_DEFAULT_ROOM[0]);
+				console.error("Error: " + ROOMS_FILE + " is empty or invalid, it should be a list of default rooms seperated by lines. Defaulting to /" + FALLBACK_DEFAULT_ROOM[0])
 				reject()
 				process.exit(1)
 			} else {
@@ -73,11 +72,10 @@ const broadcast = (user, message, room, file = undefined) => {
 		// A second check before sending. It should not be possible to hit this branch
 		if ((typeof message != "string" || message.trim() == '') && !file) {
 			reject("Message is blank or invalid")
-			console.warn("User managed to send a post request with no file or message and pass inital checks!");
+			console.warn("User managed to send a post request with no file or message and pass inital checks!")
 			return user.disconnect()
 		}
 
-		// TODO Extend this to support showing images or files in different ways depending on settings
 		let fileData = {
 			buffer: undefined,
 			type: undefined,
@@ -152,13 +150,11 @@ const broadcast = (user, message, room, file = undefined) => {
 }
 
 let sanitizeRoomName = (room) => {
-
 	room = room.trim().toLowerCase().replace(/[\\|\/]/g, "")
 	room = decodeURI(room)
 	if (room.charAt(0) === "_") {
 		room = room.substr(1).trim()
 	}
-	// TODO: check if room is NOT in list of invalid rooms, return -1 if it is
 	return room
 }
 
@@ -218,9 +214,7 @@ router.errorWithPostToken = (err, req, res) => {
 // Set headers
 router.all("*", (req, res, next) => {
 	res.append("content-type", "text/html; charset=utf-8")
-	// res.setTimeout(0) // no timeout in HTTP headers
 	req.socket.setKeepAlive(true) // prevent TCP connection from closing
-
 	next()
 })
 
@@ -236,7 +230,7 @@ router.post("*", async (req, res, next) => {
 			let fileLoadedSize = 0
 			file.on('data', function (data) {
 				fileLoadedSize += data.length
-				console.log("Uploaded so far: " + fileLoadedSize);
+				console.log("Uploaded so far: " + fileLoadedSize)
 
 				if (fileLoadedSize > MAX_FILE_SIZE) {
 					// File too large
@@ -252,11 +246,6 @@ router.post("*", async (req, res, next) => {
 						redirect: URL_PREFIX + ROUTES.UPLOAD_FILE + "?token=" + req.query.token
 					})
 					return resolve(new Error("File too large"))
-					req.file.buffer = null
-					req.file.mimetype = mimetype
-					req.file.encoding = encoding
-					req.file.originalname = filename
-					req.file.size = fileLoadedSize
 				} else {
 					req.file.buffer = Buffer.concat([req.file.buffer, data])
 				}
@@ -275,7 +264,7 @@ router.post("*", async (req, res, next) => {
 			req.body[fieldname] = value
 		})
 		upload.on('finish', function () {
-			console.log('Done parsing form!');
+			console.log('Done parsing form!')
 			return resolve()
 		})
 	}).then((result) => {
@@ -299,7 +288,7 @@ router.post("*", async (req, res, next) => {
 				})
 			}
 
-			// No room selected? Use the default one, if any
+			// Use the default one, if none is specified
 			if (req.body.room === "" && defaultRoom) {
 				req.body.room = defaultRoom
 			}
@@ -392,11 +381,11 @@ router.post("*", async (req, res, next) => {
 	}).catch((err) =>
 		console.error(err)
 	)
-	req.pipe(upload);
+	req.pipe(upload)
 })
 
 /* MAIN LOGIN PAGE */
-let MAIN_LOGIN_REGEX = new RegExp(`${URL_PREFIX}(?!_).*`); // Matches /url but not /_url
+let MAIN_LOGIN_REGEX = new RegExp(`${URL_PREFIX}(?!_).*`) // Matches /url but not /_url
 router.get(MAIN_LOGIN_REGEX, (req, res, next) => {
 	req.url = sanitizeRoomName(req.url)
 
@@ -408,8 +397,6 @@ router.get(MAIN_LOGIN_REGEX, (req, res, next) => {
 		theme: User.DEFAULT_THEME,
 		url: req.url,
 		rooms: roomsList
-	}, (err, html) => {
-		res.end(html)
 	})
 })
 
@@ -450,7 +437,12 @@ router.post(URL_PREFIX + ROUTES.MAIN, (req, res, next) => {
 			}
 		)
 	})
-	// !!! gotta timeout and delete the user if they connect to this page but never connect to the messages iframe
+
+	// Timeout and delete the user if they connect to this page but never connect to the messages iframe
+	user.joinTimeoutInterval = setInterval(() => {
+		clearInterval(user.joinTimeoutInterval)
+		disconnectUser(user)
+	}, 20000)
 })
 
 /* POST MSG IFRAME */
@@ -479,8 +471,7 @@ router.post(URL_PREFIX + ROUTES.POST_MESSAGE, (req, res, next) => {
 			return status
 		})
 		.catch((status) => {
-			// TODO: Issue occurs?, address problem
-			debugger
+			console.error(status);
 			return status
 		})
 		.finally((status) => {
@@ -521,7 +512,7 @@ router.post(URL_PREFIX + ROUTES.UPLOAD_FILE, (req, res, next) => {
 			return status
 		})
 		.catch((status) => {
-			// TODO: Issue occurs?, address problem
+			console.error(status);
 			return status
 		})
 		.finally((status) => {
@@ -572,7 +563,8 @@ router.post(URL_PREFIX + ROUTES.SETTINGS, (req, res, next) => {
 				(err, html) => { return user.res.settings.end(html) }
 			)
 		} catch (error) {
-			// TODO display an error on page about invalid theme
+			console.error(error)
+			disconnectUser(user)
 		}
 	}
 })
@@ -586,10 +578,8 @@ router.get(URL_PREFIX + ROUTES.CHAT_MESSAGES, (req, res, next) => {
 	if (!user) { return res.render(VIEWS.ERROR, ERRORS.INVALID_TOKEN) }
 	user.res.messages = res
 
-	// FIXME: If users refresh the page quickly, a ghost user will be stuck and still connected
-	// On disconnect, cancel ping keep-alive and remove user from list
+	// On disconnect, remove the user entirely
 	req.on("close", () => {
-		// clearInterval(pingInterval)
 		disconnectUser(user)
 	})
 
@@ -615,10 +605,10 @@ router.get(URL_PREFIX + ROUTES.CHAT_MESSAGES, (req, res, next) => {
 
 		broadcast(null, user.handle + " (" + user.tripcode + ") joined /" + user.room + ".", user.room)
 
-		// A keep-alive ping, to prevent the connection from dropping (usually not needed)
-		// pingInterval = setInterval(() => {
-		// 	user.res.messages.ping()
-		// }, 20000)
+		// After having loaded the messages iframe, clear out the interval
+		if (user.joinTimeoutInterval)
+			clearInterval(user.joinTimeoutInterval)
+
 	})
 })
 

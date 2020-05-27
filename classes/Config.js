@@ -2,6 +2,7 @@ const fs = require('fs')
 
 let config = {
 	DEFAULT_THEME: "dark",
+	DEFAULT_ROOM: "hallway", // TODO when loading from file, needs to be sanitized
 	themes: [],
 	urlPrefix: '/',
 }
