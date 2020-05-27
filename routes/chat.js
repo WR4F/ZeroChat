@@ -236,10 +236,22 @@ router.post("*", async (req, res, next) => {
 			let fileLoadedSize = 0
 			file.on('data', function (data) {
 				fileLoadedSize += data.length
+				console.log("Uploaded so far: " + fileLoadedSize);
+
 				if (fileLoadedSize > MAX_FILE_SIZE) {
 					// File too large
+					let user = getUserByToken(req.query.token)
+					if (!user) { return res.render(VIEWS.ERROR, ERRORS.INVALID_TOKEN) }
 					file.emit('end')
 					this.removeAllListeners()
+					res.render(VIEWS.LAYOUT, {
+						page: VIEWS.ERROR_MESSAGE,
+						url: "_hidden",
+						error: "File too large",
+						user: user,
+						redirect: URL_PREFIX + ROUTES.UPLOAD_FILE + "?token=" + req.query.token
+					})
+					return resolve(new Error("File too large"))
 					req.file.buffer = null
 					req.file.mimetype = mimetype
 					req.file.encoding = encoding
@@ -258,15 +270,19 @@ router.post("*", async (req, res, next) => {
 				req.file.size = fileLoadedSize
 			})
 		})
-		upload.on('field', function (fieldname, val, fieldnameTruncated, valTruncated, encoding, mimetype) {
-			console.log('Field [' + fieldname + ']: value: ' + val)
-			req.body[fieldname] = val
+		upload.on('field', function (fieldname, value) {
+			console.log('Field [' + fieldname + ']: value: ' + value)
+			req.body[fieldname] = value
 		})
 		upload.on('finish', function () {
 			console.log('Done parsing form!');
 			return resolve()
 		})
-	}).then(() => {
+	}).then((result) => {
+		if (result instanceof Error) {
+			return res.destroy()
+		}
+
 		req.body.settings = (req.body.settings == 'true')
 		if (req.body.handle && req.body.passcode && req.body.theme) {
 			req.body.handle = req.body.handle.trim()
@@ -360,13 +376,7 @@ router.post("*", async (req, res, next) => {
 			if (!user) { return res.render(VIEWS.ERROR, ERRORS.INVALID_TOKEN) }
 			if (req.file != null && req.file.size > MAX_FILE_SIZE) {
 				// file too large
-				return res.render(VIEWS.LAYOUT, {
-					page: VIEWS.ERROR_MESSAGE,
-					url: "_hidden",
-					error: "File too large",
-					user: user,
-					redirect: URL_PREFIX + ROUTES.UPLOAD_FILE + "?token=" + req.query.token
-				})
+				return 1 // Should have already returned
 			} else if (req.file == null || req.file.size == 0) {
 				// file required
 				return res.render(VIEWS.LAYOUT, {
@@ -379,7 +389,9 @@ router.post("*", async (req, res, next) => {
 			}
 		}
 		next()
-	})
+	}).catch((err) =>
+		console.error(err)
+	)
 	req.pipe(upload);
 })
 
