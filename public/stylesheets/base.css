@@ -21,7 +21,7 @@ input, textarea, select, datalist{
 	-webkit-appearance: none;
 	appearance: none;
 }
-input, textarea, select, label[for=fileupload]{
+input, textarea, select, label[for=fileupload], .forCheckbox{
 	padding: initial;
 	border: 2px solid var(--border);
 	background-color: var(--bg);
@@ -31,6 +31,24 @@ input, textarea, select, label[for=fileupload]{
 	position: relative;
 	margin: 0 2px;
 	line-height: 24px;
+}
+input[type="checkbox"]{
+	display: none;
+}
+input[type=checkbox] + .forCheckbox {
+	color: var(--bg);
+	height: 24px;
+	width: 25px;
+	font-size: 28px;
+	padding: 2px;
+	margin: 0;
+	line-height: 25px;
+}
+input[type=checkbox]:checked + .forCheckbox {
+	color: var(--fg);
+}
+input[type=submit]{
+	cursor: pointer;
 }
 select{
 	padding-right: 30px;
@@ -123,7 +141,7 @@ code {
 }
 
 #checkshow, #checkshow + label{
-	cursor:pointer
+	cursor: pointer;
 }
 #checkshow + label{
 	position: initial;
@@ -160,9 +178,10 @@ code {
 
 #checkshow:checked + label + #settings_options {
 	display: grid;
-	padding: 10px 20px;
+	padding: 10px 0;
 	grid-gap: 20px;
-	grid-template-columns: auto auto;
+	grid-template-columns: 100px auto;
+	align-items: center;
 }
 
 #settings-save {

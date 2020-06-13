@@ -7,9 +7,9 @@
 			<input type="checkbox" id="checkshow">
 			<label for="checkshow"></label>
 			<div id="settings_options">
-				<label>Theme</label>
-
 				<input type="hidden" name="settings" value="true">
+
+				<label>Theme</label>
 
 				<select name="theme" id="themepicker">
 					<% locals.config.themes.forEach( curTheme => { %>
@@ -19,11 +19,18 @@
 					</option>
 					<% }) %>
 				</select>
+
+				<label>File Previews</label>
+				<input type="checkbox" name="inlineView" id="inlineView"
+					<% if (typeof inlineView != "undefined" && inlineView) { %> checked <% } %> />
+				<label for="inlineView" class="forCheckbox">🗸</label>
+
 				<!-- <label>View</label>
-			<select name="theme" id="themepicker">
-				<option selected name="theme" value="Comfy">Comfy</option>
-				<option selected name="theme" value="Compact">Compact</option>
-			</select> -->
+				<select name="theme" id="themepicker">
+					<option selected name="theme" value="Comfy">Comfy</option>
+					<option selected name="theme" value="Compact">Compact</option>
+				</select> -->
+
 				<input type="submit" id="settings-save" value="Apply" />
 			</div>
 
