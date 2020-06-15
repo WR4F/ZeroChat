@@ -263,7 +263,6 @@ router.post("*", async (req, res, next) => {
 		}
 
 		// Login sanitization
-		req.body.settings = (req.body.settings == 'true')
 		if (req.body.handle && req.body.passcode) {
 			req.body.handle = req.body.handle.trim()
 			req.body.passcode = req.body.passcode.trim()
@@ -276,9 +275,12 @@ router.post("*", async (req, res, next) => {
 		}
 
 		// Settings sanitization
-		if (req.body.settings === true) {
-			req.body.settings = req.body.settings.toString() == "true"
+		req.body.setSettings = (req.body.setSettings && req.body.setSettings.toString() == 'true')
+		req.body.join = (req.body.join && req.body.join.toString() == 'true')
+		if (req.body.setSettings === true || req.body.join === true) {
+			req.body.inlineView = (req.body.inlineView ? true : undefined)
 			req.body.theme = req.body.theme.trim()
+			// Check if invalid theme
 			if (!Config.isValidTheme(req.body.theme)) {
 				return res.render(VIEWS.LAYOUT, {
 					page: VIEWS.ERROR_MESSAGE,
@@ -287,12 +289,11 @@ router.post("*", async (req, res, next) => {
 					redirect: URL_PREFIX
 				})
 			}
-			req.body.inlineView = (req.body.inlineView ? true : false)
 		}
 
-		if (req.url.substr(0, 2) !== URL_PREFIX + "_") {
+		if (req.url.substr(0, (URL_PREFIX + "_").length) !== URL_PREFIX + "_") {
 			// Check if the user is sending an update to their settings or not
-			if (req.body.settings) {
+			if (req.body.setSettings && req.body.join === undefined) {
 				// Reload front page with settings applied
 				return res.render(VIEWS.LAYOUT, {
 					page: VIEWS.FRONT_PAGE,
@@ -301,6 +302,7 @@ router.post("*", async (req, res, next) => {
 					roomNameMaxlen: MAX_ROOMNAME_LENGTH,
 					theme: req.body.theme || Config.DEFAULT_THEME,
 					inlineView: req.body.inlineView,
+					setSettings: req.body.setSettings,
 					url: sanitizeRoomName(req.url),
 					rooms: roomsList
 				})
@@ -391,6 +393,7 @@ router.get(MAIN_LOGIN_REGEX, (req, res, next) => {
 		roomNameMaxlen: MAX_ROOMNAME_LENGTH,
 		theme: req.body.theme || Config.DEFAULT_THEME,
 		inlineView: (req.body.inlineView === undefined ? Config.DEFAULT_INLINE_PREVIEW : req.body.inlineView),
+		setSettings: req.body.setSettings,
 		url: req.url,
 		rooms: roomsList
 	})
@@ -533,6 +536,7 @@ router.get(URL_PREFIX + ROUTES.SETTINGS, (req, res, next) => {
 			user: user,
 			theme: user.theme,
 			inlineView: user.inlineView,
+			setSettings: req.body.setSettings,
 			snapbottom: true,
 			redirect: URL_PREFIX + ROUTES.SETTINGS + "?token=" + req.query.token,
 		},
@@ -545,7 +549,7 @@ router.post(URL_PREFIX + ROUTES.SETTINGS, (req, res, next) => {
 	if (!user) { return res.render(VIEWS.ERROR, ERRORS.INVALID_TOKEN) }
 	user.res.settings = res
 
-	if (!req.body.settings) {
+	if (!req.body.setSettings) {
 		return res.render(VIEWS.LAYOUT, {
 			page: VIEWS.ERROR_MESSAGE,
 			url: "_hidden",
@@ -555,8 +559,7 @@ router.post(URL_PREFIX + ROUTES.SETTINGS, (req, res, next) => {
 		})
 	}
 
-	if (user.theme !== req.body.theme ||
-		user.inlineView !== req.body.inlineView) {
+	if (user.theme !== req.body.theme || user.inlineView !== req.body.inlineView) {
 		try {
 			user.setTheme(req.body.theme)
 			user.inlineView = req.body.inlineView
@@ -567,7 +570,9 @@ router.post(URL_PREFIX + ROUTES.SETTINGS, (req, res, next) => {
 					user: user,
 					theme: user.theme,
 					inlineView: user.inlineView,
+					setSettings: req.body.setSettings,
 					snapbottom: true,
+					setSettings: true,
 					redirect: URL_PREFIX + ROUTES.SETTINGS + "?token=" + req.query.token,
 				},
 				(err, html) => { return user.res.settings.end(html) }
