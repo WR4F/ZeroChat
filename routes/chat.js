@@ -118,6 +118,7 @@ const broadcast = (user, message, room, file = undefined) => {
 							tripcode: iUser.tripcode,
 							messageType: "self",
 							message: message,
+							inlineView: iUser.inlineView,
 							timestamp: new Date().toUTCString(),
 							file: fileData.buffer,
 							filetype: fileData.type,
@@ -135,6 +136,7 @@ const broadcast = (user, message, room, file = undefined) => {
 							tripcode: postTrip,
 							messageType: messageType,
 							message: message,
+							inlineView: iUser.inlineView,
 							timestamp: new Date().toUTCString(),
 							file: fileData.buffer,
 							filetype: fileData.type,
@@ -221,20 +223,9 @@ router.post("*", async (req, res, next) => {
 			file.on('data', function (data) {
 				fileLoadedSize += data.length
 				console.log("Uploaded so far: " + fileLoadedSize)
-
 				if (fileLoadedSize > MAX_FILE_SIZE) {
 					// File too large
-					let user = getUserByToken(req.query.token)
-					if (!user) { return res.render(VIEWS.ERROR, ERRORS.INVALID_TOKEN) }
 					file.emit('end')
-					this.removeAllListeners()
-					res.render(VIEWS.LAYOUT, {
-						page: VIEWS.ERROR_MESSAGE,
-						url: "_hidden",
-						error: "File too large",
-						user: user,
-						redirect: URL_PREFIX + ROUTES.UPLOAD_FILE + "?token=" + req.query.token
-					})
 					return resolve(new Error("File too large"))
 				} else {
 					req.file.buffer = Buffer.concat([req.file.buffer, data])
@@ -248,6 +239,11 @@ router.post("*", async (req, res, next) => {
 				req.file.originalname = filename
 				req.file.size = fileLoadedSize
 			})
+			if (parseInt(req.headers['content-length']) > MAX_FILE_SIZE) {
+				// File too large
+				file.emit('end')
+				return resolve(new Error("File too large"))
+			}
 		})
 		upload.on('field', function (fieldname, value) {
 			console.log('Field [' + fieldname + ']: value: ' + value)
@@ -258,8 +254,17 @@ router.post("*", async (req, res, next) => {
 			return resolve()
 		})
 	}).then((result) => {
+		let user = getUserByToken(req.query.token)
+		if (!user) { user = undefined }
 		if (result instanceof Error) {
-			return res.destroy()
+			console.error("Error in file upload: " + result)
+			return res.render(VIEWS.LAYOUT, {
+				page: VIEWS.ERROR_MESSAGE,
+				url: "_hidden",
+				error: result.message,
+				user: user,
+				redirect: URL_PREFIX + ROUTES.UPLOAD_FILE + "?token=" + req.query.token
+			})
 		}
 
 		// Login sanitization
@@ -362,7 +367,8 @@ router.post("*", async (req, res, next) => {
 			if (!user) { return res.render(VIEWS.ERROR, ERRORS.INVALID_TOKEN) }
 			if (req.file != null && req.file.size > MAX_FILE_SIZE) {
 				// file too large
-				return 1 // Should have already returned
+				console.error("Somehow, the FILE TOO LARGE error was not caught!");
+				return 1 // FIXME Should have already returned
 			} else if (req.file == null || req.file.size == 0) {
 				// file required
 				return res.render(VIEWS.LAYOUT, {

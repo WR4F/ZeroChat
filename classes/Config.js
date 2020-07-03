@@ -3,7 +3,7 @@ const fs = require('fs')
 let config = {
 	DEFAULT_THEME: "dark",
 	DEFAULT_ROOM: "hallway", // TODO when loading from file, needs to be sanitized
-	DEFAULT_INLINE_PREVIEW: undefined,
+	DEFAULT_INLINE_PREVIEW: true,
 	secretSalt: "dummy text", // !!! Replace with a real salt
 	themes: [],
 	urlPrefix: '/',
