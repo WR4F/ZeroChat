@@ -1,5 +1,5 @@
-const crypto = require("../crypto")
-const config = require("./Config")
+const ChatCrypto = require("../ChatCrypto")
+const Config = require("./Config")
 
 // TODO: User input data needs sanitizing
 /**
@@ -14,11 +14,12 @@ module.exports = class User {
 		""
 	]
 
-	constructor(handle, pass, res, theme, room) {
+	constructor(handle, pass, res, theme, inlineView, room) {
 		this.handle = handle // screen name
-		this.token = crypto.dispenseToken() // session token
-		this.tripcode = crypto.genTripcode(pass) // identifying tripcode
+		this.token = ChatCrypto.dispenseToken() // session token
+		this.tripcode = ChatCrypto.genTripcode(pass) // identifying tripcode
 		this.theme = theme // preferred theme
+		this.inlineView = (inlineView ? true : false)
 		this.room = room // the room the user is in
 		this.res = { "chatroom": res, "post": null, "upload": null, "messages": null, "settings": null } // response object
 		this.placeholderIter = 0
@@ -31,9 +32,9 @@ module.exports = class User {
 
 	// Update the user's current theme live
 	setTheme(theme) {
-		if (config.isValidTheme(theme)) {
+		if (Config.isValidTheme(theme)) {
 			this.theme = theme
-			this.updateStream(`<link rel='stylesheet' href='${config.urlPrefix}/themes/${this.theme}.css' />`)
+			this.updateStream(`<link rel='stylesheet' href='${Config.urlPrefix}/themes/${this.theme}.css' />`)
 		} else {
 			throw new Error("Invalid theme '" + theme + "'")
 		}

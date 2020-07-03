@@ -4,19 +4,23 @@
 	<div>
 		<% if (typeof file != "undefined") { %>
 		<div class="filedownload">
-			<% if (filetype == "image") { %>
-			<span><%= filename %></span>
-			<img title="<%= filename %>" alt="<%= filename %>" src="data:<%= mimetype %>;base64,<%= file %>" />
-			<% } else if (filetype == "video") { %>
-			<span><%= filename %></span>
-			<video controls title="<%= filename %>" src="data:<%= mimetype %>;base64,<%= file %>"></video>
-			<% } else if (filetype == "audio") { %>
-			<span><%= filename %></span>
-			<audio controls title="<%= filename %>">
-				<source src="data:<%= mimetype %>;base64,<%= file %>">
-			</audio>
+			<% if (typeof inlineView != "undefined") { %>
+				<% if (filetype == "image") { %>
+				<span><%= filename %></span>
+				<img title="<%= filename %>" alt="<%= filename %>" src="data:<%= mimetype %>;base64,<%= file %>" />
+				<% } else if (filetype == "video") { %>
+				<span><%= filename %></span>
+				<video controls title="<%= filename %>" src="data:<%= mimetype %>;base64,<%= file %>"></video>
+				<% } else if (filetype == "audio") { %>
+				<span><%= filename %></span>
+				<audio controls title="<%= filename %>">
+					<source src="data:<%= mimetype %>;base64,<%= file %>">
+				</audio>
+				<% } else { %>
+				<a download="<%= filename %>" href="data:<%= mimetype %>;base64,<%= file %>"><span><%= filename %></span></a>
+				<% } %>
 			<% } else { %>
-			<a href="data:<%= mimetype %>;base64,<%= file %>"><span><%= filename %></span></a>
+			<a download="<%= filename %>" href="data:<%= mimetype %>;base64,<%= file %>"><span><%= filename %></span></a>
 			<% } %>
 		</div>
 		<% } %>

@@ -1,7 +1,8 @@
 const express = require("express")
 const fs = require('fs')
 const User = require("../classes/User")
-const config = require('../classes/Config')
+const Config = require('../classes/Config')
+const ChatCrypto = require('../ChatCrypto')
 
 const Busboy = require('busboy')
 
@@ -14,8 +15,9 @@ const MAX_FILE_SIZE = 5242880 // 5 Mb
 const MAX_HANDLE_LENGTH = 15
 const MAX_PASSCODE_LENGTH = 64
 const MAX_ROOMNAME_LENGTH = 24
-const EXPECTED_TOKEN_LENGTH = 60 // length of crypto.js hash
-const URL_PREFIX = config.urlPrefix // TODO Support any prefix, replace all / in ejs files with var from cfg file
+const URL_PREFIX = Config.urlPrefix // TODO Support any prefix, replace all / in ejs files with var from cfg file
+const CONNECT_DELAY_TIMEOUT = 20000 // How long to wait before disconnecting user if they never get past chatroom page
+
 const ROUTES = {
 	MAIN: '',
 	POST_MESSAGE: '_post-message',
@@ -43,7 +45,7 @@ const ERRORS = {
 	INVALID_REQUEST: { message: "Invalid Request", error: "400" },
 }
 
-let defaultRoom = config.DEFAULT_ROOM
+let defaultRoom = Config.DEFAULT_ROOM
 const ROOMS_FILE = "rooms.txt"
 const FALLBACK_DEFAULT_ROOM = [defaultRoom]
 
@@ -116,6 +118,7 @@ const broadcast = (user, message, room, file = undefined) => {
 							tripcode: iUser.tripcode,
 							messageType: "self",
 							message: message,
+							inlineView: iUser.inlineView,
 							timestamp: new Date().toUTCString(),
 							file: fileData.buffer,
 							filetype: fileData.type,
@@ -133,6 +136,7 @@ const broadcast = (user, message, room, file = undefined) => {
 							tripcode: postTrip,
 							messageType: messageType,
 							message: message,
+							inlineView: iUser.inlineView,
 							timestamp: new Date().toUTCString(),
 							file: fileData.buffer,
 							filetype: fileData.type,
@@ -156,18 +160,6 @@ let sanitizeRoomName = (room) => {
 		room = room.substr(1).trim()
 	}
 	return room
-}
-
-let isUsedPath = (url) => {
-	let matching = PATHS.filter(path => {
-		return (URL_PREFIX + path) == url
-	})
-
-	if (matching.length == 0) {
-		return false
-	} else {
-		return true
-	}
 }
 
 let disconnectUser = (user) => {
@@ -231,20 +223,9 @@ router.post("*", async (req, res, next) => {
 			file.on('data', function (data) {
 				fileLoadedSize += data.length
 				console.log("Uploaded so far: " + fileLoadedSize)
-
 				if (fileLoadedSize > MAX_FILE_SIZE) {
 					// File too large
-					let user = getUserByToken(req.query.token)
-					if (!user) { return res.render(VIEWS.ERROR, ERRORS.INVALID_TOKEN) }
 					file.emit('end')
-					this.removeAllListeners()
-					res.render(VIEWS.LAYOUT, {
-						page: VIEWS.ERROR_MESSAGE,
-						url: "_hidden",
-						error: "File too large",
-						user: user,
-						redirect: URL_PREFIX + ROUTES.UPLOAD_FILE + "?token=" + req.query.token
-					})
 					return resolve(new Error("File too large"))
 				} else {
 					req.file.buffer = Buffer.concat([req.file.buffer, data])
@@ -258,6 +239,11 @@ router.post("*", async (req, res, next) => {
 				req.file.originalname = filename
 				req.file.size = fileLoadedSize
 			})
+			if (parseInt(req.headers['content-length']) > MAX_FILE_SIZE) {
+				// File too large
+				file.emit('end')
+				return resolve(new Error("File too large"))
+			}
 		})
 		upload.on('field', function (fieldname, value) {
 			console.log('Field [' + fieldname + ']: value: ' + value)
@@ -268,18 +254,39 @@ router.post("*", async (req, res, next) => {
 			return resolve()
 		})
 	}).then((result) => {
+		let user = getUserByToken(req.query.token)
+		if (!user) { user = undefined }
 		if (result instanceof Error) {
-			return res.destroy()
+			console.error("Error in file upload: " + result)
+			return res.render(VIEWS.LAYOUT, {
+				page: VIEWS.ERROR_MESSAGE,
+				url: "_hidden",
+				error: result.message,
+				user: user,
+				redirect: URL_PREFIX + ROUTES.UPLOAD_FILE + "?token=" + req.query.token
+			})
 		}
 
-		req.body.settings = (req.body.settings == 'true')
-		if (req.body.handle && req.body.passcode && req.body.theme) {
+		// Login sanitization
+		if (req.body.handle && req.body.passcode) {
 			req.body.handle = req.body.handle.trim()
 			req.body.passcode = req.body.passcode.trim()
-			req.body.theme = req.body.theme.trim()
 			req.body.room = sanitizeRoomName(req.body.room)
 
-			if (!config.isValidTheme(req.body.theme)) {
+			// Use the default room if none is specified
+			if (req.body.room === "" && defaultRoom) {
+				req.body.room = defaultRoom
+			}
+		}
+
+		// Settings sanitization
+		req.body.setSettings = (req.body.setSettings && req.body.setSettings.toString() == 'true')
+		req.body.join = (req.body.join && req.body.join.toString() == 'true')
+		if (req.body.setSettings === true || req.body.join === true) {
+			req.body.inlineView = (req.body.inlineView ? true : undefined)
+			req.body.theme = req.body.theme.trim()
+			// Check if invalid theme
+			if (!Config.isValidTheme(req.body.theme)) {
 				return res.render(VIEWS.LAYOUT, {
 					page: VIEWS.ERROR_MESSAGE,
 					url: "_hidden",
@@ -287,23 +294,20 @@ router.post("*", async (req, res, next) => {
 					redirect: URL_PREFIX
 				})
 			}
-
-			// Use the default one, if none is specified
-			if (req.body.room === "" && defaultRoom) {
-				req.body.room = defaultRoom
-			}
 		}
 
-		if (req.url.substr(0, 2) !== URL_PREFIX + "_") {
+		if (req.url.substr(0, (URL_PREFIX + "_").length) !== URL_PREFIX + "_") {
 			// Check if the user is sending an update to their settings or not
-			if (req.body.settings) {
+			if (req.body.setSettings && req.body.join === undefined) {
 				// Reload front page with settings applied
 				return res.render(VIEWS.LAYOUT, {
 					page: VIEWS.FRONT_PAGE,
 					handleMaxlen: MAX_HANDLE_LENGTH,
 					passMaxlen: MAX_PASSCODE_LENGTH,
 					roomNameMaxlen: MAX_ROOMNAME_LENGTH,
-					theme: req.body.theme || User.DEFAULT_THEME,
+					theme: req.body.theme || Config.DEFAULT_THEME,
+					inlineView: req.body.inlineView,
+					setSettings: req.body.setSettings,
 					url: sanitizeRoomName(req.url),
 					rooms: roomsList
 				})
@@ -337,8 +341,6 @@ router.post("*", async (req, res, next) => {
 				})
 			}
 		} else if (req.url.startsWith(URL_PREFIX + ROUTES.POST_MESSAGE)) {
-			let user = getUserByToken(req.query.token)
-			if (!user) { return res.render(VIEWS.ERROR, ERRORS.INVALID_TOKEN) }
 
 			// Disconnect if user is sending a blank message without a file, or a message too large
 			if (req.body.message == null || req.body.message.trim() == "") {
@@ -365,7 +367,8 @@ router.post("*", async (req, res, next) => {
 			if (!user) { return res.render(VIEWS.ERROR, ERRORS.INVALID_TOKEN) }
 			if (req.file != null && req.file.size > MAX_FILE_SIZE) {
 				// file too large
-				return 1 // Should have already returned
+				console.error("Somehow, the FILE TOO LARGE error was not caught!");
+				return 1 // FIXME Should have already returned
 			} else if (req.file == null || req.file.size == 0) {
 				// file required
 				return res.render(VIEWS.LAYOUT, {
@@ -394,7 +397,9 @@ router.get(MAIN_LOGIN_REGEX, (req, res, next) => {
 		handleMaxlen: MAX_HANDLE_LENGTH,
 		passMaxlen: MAX_PASSCODE_LENGTH,
 		roomNameMaxlen: MAX_ROOMNAME_LENGTH,
-		theme: User.DEFAULT_THEME,
+		theme: req.body.theme || Config.DEFAULT_THEME,
+		inlineView: (req.body.inlineView === undefined ? Config.DEFAULT_INLINE_PREVIEW : req.body.inlineView),
+		setSettings: req.body.setSettings,
 		url: req.url,
 		rooms: roomsList
 	})
@@ -403,7 +408,7 @@ router.get(MAIN_LOGIN_REGEX, (req, res, next) => {
 /* IFRAMES PRECHECK */
 router.get(URL_PREFIX + "_*", (req, res, next) => {
 	// If we're supposed to load an iframe in the chatroom view
-	if (req.query.token != null && req.query.token.length === EXPECTED_TOKEN_LENGTH) {
+	if (req.query.token != null && req.query.token.length === ChatCrypto.EXPECTED_TOKEN_LENGTH) {
 		next()
 	} else {
 		// Disconnect if the user is connecting to the upload form or chat without a token in the GET request
@@ -417,7 +422,7 @@ router.post(URL_PREFIX + ROUTES.MAIN, (req, res, next) => {
 	if (req.body.handle === undefined || req.body.passcode === undefined) {
 		return res.render(VIEWS.ERROR, ERRORS.INVALID_REQUEST, res.end())
 	}
-	user = new User(req.body.handle, req.body.passcode, res, req.body.theme, req.body.room)
+	user = new User(req.body.handle, req.body.passcode, res, req.body.theme, req.body.inlineView, req.body.room)
 	users.push(user)
 
 	// Wait until the tripcode is done generating
@@ -442,7 +447,7 @@ router.post(URL_PREFIX + ROUTES.MAIN, (req, res, next) => {
 	user.joinTimeoutInterval = setInterval(() => {
 		clearInterval(user.joinTimeoutInterval)
 		disconnectUser(user)
-	}, 20000)
+	}, CONNECT_DELAY_TIMEOUT)
 })
 
 /* POST MSG IFRAME */
@@ -536,6 +541,8 @@ router.get(URL_PREFIX + ROUTES.SETTINGS, (req, res, next) => {
 			page: VIEWS.SETTINGS,
 			user: user,
 			theme: user.theme,
+			inlineView: user.inlineView,
+			setSettings: req.body.setSettings,
 			snapbottom: true,
 			redirect: URL_PREFIX + ROUTES.SETTINGS + "?token=" + req.query.token,
 		},
@@ -548,16 +555,30 @@ router.post(URL_PREFIX + ROUTES.SETTINGS, (req, res, next) => {
 	if (!user) { return res.render(VIEWS.ERROR, ERRORS.INVALID_TOKEN) }
 	user.res.settings = res
 
-	if (user.theme !== req.body.theme) {
+	if (!req.body.setSettings) {
+		return res.render(VIEWS.LAYOUT, {
+			page: VIEWS.ERROR_MESSAGE,
+			url: "_hidden",
+			error: "Invalid request",
+			user: user,
+			redirect: URL_PREFIX + ROUTES.UPLOAD_FILE + "?token=" + req.query.token
+		})
+	}
+
+	if (user.theme !== req.body.theme || user.inlineView !== req.body.inlineView) {
 		try {
 			user.setTheme(req.body.theme)
+			user.inlineView = req.body.inlineView
 			user.res.settings.render(
 				VIEWS.LAYOUT,
 				{
 					page: VIEWS.SETTINGS,
 					user: user,
 					theme: user.theme,
+					inlineView: user.inlineView,
+					setSettings: req.body.setSettings,
 					snapbottom: true,
+					setSettings: true,
 					redirect: URL_PREFIX + ROUTES.SETTINGS + "?token=" + req.query.token,
 				},
 				(err, html) => { return user.res.settings.end(html) }
