@@ -1,12 +1,14 @@
 const fs = require('fs')
+const dotenv = require('dotenv').config()
 
 let config = {
-	DEFAULT_THEME: "dark",
-	DEFAULT_ROOM: "hallway", // TODO when loading from file, needs to be sanitized
-	DEFAULT_INLINE_PREVIEW: true,
-	secretSalt: "dummy text", // !!! Replace with a real salt
+	DEFAULT_THEME: process.env.DEFAULT_THEME,
+	DEFAULT_ROOM: process.env.DEFAULT_ROOM,
+	DEFAULT_INLINE_PREVIEW: process.env.DEFAULT_ROOM,
+	PORT: parseInt(process.env.PORT), // also used directly as .env in the bin/www file
+	SECRET_SALT: process.env.SECRET_SALT,
 	themes: [],
-	urlPrefix: '/',
+	urlPrefix: '/', // not yet a variable
 }
 
 config.isValidTheme = (theme) => {

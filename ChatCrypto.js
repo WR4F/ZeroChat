@@ -4,7 +4,7 @@ const Config = require("./classes/Config")
 
 let chatCrypto = {
 	CRYPTO_ITERATIONS: 10000,
-	SALT: Config.secretSalt,
+	SALT: Config.SECRET_SALT,
 	HASH_LENGTH: 6,
 	DIGEST: "sha256",
 	KEY_LENGTH: 30,
