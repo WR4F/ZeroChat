@@ -19,7 +19,7 @@ module.exports = class User {
 		this.token = ChatCrypto.dispenseToken() // session token
 		this.tripcode = ChatCrypto.genTripcode(pass) // identifying tripcode
 		this.theme = theme // preferred theme
-		this.inlineView = (inlineView && inlineView.toLowerCase() === 'true')
+		this.inlineView = (inlineView ? true : undefined)
 		this.room = room // the room the user is in
 		this.res = { "chatroom": res, "post": null, "upload": null, "messages": null, "settings": null } // response object
 		this.placeholderIter = 0
