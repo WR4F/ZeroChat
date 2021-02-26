@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  zerochat:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 8080:80
+    volumes:
+      - .:/bot:ro
+    tty: true
+    env_file: .env
+    restart: on-failure
