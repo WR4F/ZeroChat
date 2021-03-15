@@ -12,6 +12,12 @@ ZeroChat
 
 </p>
 
+<h3 align="center">
+  <a href="https://github.com/rslay/ZeroChat/issues">Report a bug</a>
+  <span> · </span>
+  <a href="https://github.com/rslay/ZeroChat/discussions">Discussions</a>
+</h3>
+
 A live web chat. No client-side javascript, cookies, accounts, or `<meta http-equiv="refresh">` tags.
 
 Instead, your browser never finishes loading the whole page, and downloads messages as they are posted by others.
@@ -78,6 +84,15 @@ npm --version
 ## Upcoming features
 
 Check the [Issue Tracker](https://github.com/rslay/ZeroChat/issues).
+
+## 🤝 Contributing
+
+Contributions, issues and feature requests are welcome. After cloning & setting up project locally, you can just submit 
+a PR to this repo and it will be deployed once it's accepted.
+
+⚠️ It’s good to have descriptive commit messages, or PR titles so that other contributors can understand about your 
+commit or the PR Created. Read [conventional commits](https://www.conventionalcommits.org/en/v1.0.0-beta.3/) before 
+making the commit message.
 
 ## How it works
 
