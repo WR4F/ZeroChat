@@ -18,7 +18,7 @@ Instead, your browser never finishes loading the whole page, and downloads messa
 
 Authentification is done with a password/tripcode system using PBKDF2 hashes.
 
-## Try it! &nbsp;Visit [chat.justhack.in](https://chat.justhack.in)
+## Try it by visiting [chat.justhack.in](https://chat.justhack.in)
 
 <a href="https://chat.justhack.in"><img src="https://raw.githubusercontent.com/rslay/ZeroChat/master/image.png" title="Preview of chat login page" style="width: 200px;height: 150px"/></a>
 
@@ -63,6 +63,7 @@ Run the following to install the wonderful **[n](https://github.com/tj/n)** Node
 curl -L https://git.io/n-install | bash
 n 12.0.0
 npm --version
+```
 
 #### Main installation section
 
