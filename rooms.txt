@@ -1,7 +1,11 @@
 Hallway
-Español
-Français
-Deutsche
-中文
-हिन्दी
-TheBackrooms
+Grand Hall Room
+English chat
+Private-1
+Private-2
+Private-3
+Private-4
+Private-5
+Private-6
+Non-English
+Others
