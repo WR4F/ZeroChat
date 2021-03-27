@@ -12,7 +12,7 @@ let config = {
 
 	SECRET_SALT: process.env.SECRET_SALT,
 	themes: [],
-	urlPrefix: '/'
+	urlPrefix: '/' // not yet a variable
 }
 
 config.isValidTheme = (theme) => {

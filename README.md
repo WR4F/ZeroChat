@@ -13,8 +13,10 @@ ZeroChat
 </p>
 
 <h3 align="center">
-  <a href="https://github.com/rslay/ZeroChat/issues">Report a bug</a>
-  <span> · </span>
+  <a href="https://github.com/rslay/ZeroChat/issues/new">Report a bug</a>
+  <span> · </span> 
+  <a href="https://github.com/rslay/ZeroChat/pulls/new">Create a PR for contributions</a>
+  <span> · </span> 
   <a href="https://github.com/rslay/ZeroChat/discussions">Discussions</a>
 </h3>
 
@@ -30,9 +32,11 @@ Authentification is done with a password/tripcode system using PBKDF2 hashes.
 
 **It's easy to self-host, and simple to use.** Developed with a security-first mentality.
 
+Run ZeroChat in just a [few commands with Docker](README.md#Self hosting with Docker)!
+
 ## Running & Dependencies
 
-This project requires NodeJS, unless you download one of the [releases](https://github.com/rslay/ZeroChat/releases).
+This project requires NodeJS, unless you download one of the [releases](https://github.com/rslay/ZeroChat/releases) (Supported only on windows).
 
 ### Running ZeroChat on Windows
 
@@ -40,11 +44,13 @@ Take a look at the [releases](https://github.com/rslay/ZeroChat/releases) for ex
 
 If you want to run the source NodeJS file and tweak it, you can go to [NodeJS.org](https://nodejs.org) to install NodeJS, and then follow along with the steps to self host below!
 
-### Docker
+### Self hosting with docker [Any platform / OS]
 
 Docker is an easy way of containerizing and delivering your applications quickly and easily, in an 
 convenient way. It's really simple to get started with this, with docker handling all the installation
-and other tasks.Configure the environmental variables by renaming the `.env.example` file to `.env` with the respective 
+and other tasks.
+
+Configure the environmental variables by renaming the `.env.example` file to `.env` with the respective 
 values. Then, run `docker-compose --env-file .env up` after getting the project and config ready.
 
 **Docker mini guide:**
@@ -59,9 +65,7 @@ This is a clean and neat way of hosting without using docker. You can follow thi
 well on your system, or it doesn't support it. Containers are resource intensive, and your PC might not
 be able to do it, this is the perfect method to get started with the self-hosting.
 
-**Pre-requisites**
-- Node
-- NPM
+#### Prerequisites: Setting up `node` and `npm`
 
 Run the following to install the wonderful **[n](https://github.com/tj/n)** NodeJS version manager, and then install NodeJS v12.0.0:
 
@@ -71,32 +75,44 @@ n 12.0.0
 npm --version
 ```
 
-#### Main installation section
+#### Installation and usage.
 
 - Clone or fork the repository, whichever suits you better.
 - Install the dependencies for the project using **`npm install`**
 - Configure the environmental variables by renaming the `.env.example` file to `.env` with the respective 
-  values for it. If you\'re using heroku or other platforms that have option for external environmental
-  variables, use that instead of `.env`
-- Configure the options and settings available in `bin/www`, according to your preferences.
-- Run the server using `npm run start`
+  values for it. If the platform you're using have support for external environmental variables, for example AWS
+  or heroku or something else, Configure it there, and refrain from configuring `.env`
+- Run the server using **`npm run start`**
+
+Summary of the steps to be done:
+
+```sh
+git clone https://github.com/rslay/ZeroChat zerochat
+cd zerochat
+npm install
+// configure the ENV variables if needed.
+npm run start
+```
 
 ## Upcoming features
 
-Check the [Issue Tracker](https://github.com/rslay/ZeroChat/issues).
+Check the following places:
+- [Issue Tracker](https://github.com/rslay/ZeroChat/issues)
+- [Pull requests](https://github.com/rslay/ZeroChat/pulls)
+- [Discussions](https://github.com/rslay/ZeroChat/discussions)
 
 ## 🤝 Contributing
 
-Contributions, issues and feature requests are welcome. After cloning & setting up project locally, you can just submit 
+Contributions, issues, and feature requests are welcome. After cloning and setting up project locally, you can submit 
 a PR to this repo and it will be deployed once it's accepted.
 
-⚠️ It’s good to have descriptive commit messages, or PR titles so that other contributors can understand about your 
+⚠️ It’s good to have descriptive commit messages, or PR titles so that other contributors can better understand your
 commit or the PR Created. Read [conventional commits](https://www.conventionalcommits.org/en/v1.0.0-beta.3/) before 
 making the commit message.
 
 ## How it works
 
-Here\'s the complete article that explains how it works! [Read this](https://justhack.in/stateful-http).
+Here is the [article that explains how it works](https://justhack.in/stateful-http)!
 
 ## Show your support
 
