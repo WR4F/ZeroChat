@@ -32,7 +32,7 @@ Authentification is done with a password/tripcode system using PBKDF2 hashes.
 
 **It's easy to self-host, and simple to use.** Developed with a security-first mentality.
 
-Run ZeroChat in just a [few commands with Docker](README.md#Self hosting with Docker)!
+Run ZeroChat in just a [few commands with Docker](#self-hosting-with-docker)!
 
 ## Running & Dependencies
 
@@ -42,32 +42,31 @@ This project requires NodeJS, unless you download one of the [releases](https://
 
 Take a look at the [releases](https://github.com/rslay/ZeroChat/releases) for executable binaries if you just want to run the chat server.
 
-If you want to run the source NodeJS file and tweak it, you can go to [NodeJS.org](https://nodejs.org) to install NodeJS, and then follow along with the steps to self host below!
+If you want to tweak the program and run the source code on Windows without docker, follow along with the [steps to self host](#self-hosting-without-docker) below!
 
 ### Self hosting with Docker
+
+**Docker mini guide**
+
+- Prepare: `cp .env.example .env`
+- Run: `docker-compose --env-file .env up`
+- Stop: `docker-compose down`
 
 Docker is an easy way of containerizing and delivering your applications quickly and easily, in an 
 convenient way. It's really simple to get started with this, with docker handling all the installation
 and other tasks.
 
-Configure the environmental variables by renaming the `.env.example` file to `.env` with the respective 
-values. Then, run `docker-compose --env-file .env up` after getting the project and config ready.
+1. Configure the environmental variables by renaming the `.env.example` file to `.env`
+2. (Optionally) Edit `.env` with the custom values
+3. Run `docker-compose --env-file .env up` after getting the project and config ready
 
-**Docker mini guide:**
+`docker ps` should show you that the service is running!
 
-- Running the bot: `docker-compose --env-file .env up`
-- Stopping the bot: `docker-compose down`
-- Rebuilding the bot: `docker-compose build`
+### Self Hosting without Docker
 
-### Self hosting without docker
+All you need is `node`, which comes with `npm`!
 
-This is a clean and neat way of hosting without using docker. You can follow this if docker doesn't work
-well on your system, or it doesn't support it. Containers are resource intensive, and your PC might not
-be able to do it, this is the perfect method to get started with the self-hosting.
-
-#### Prerequisites: Setting up `node` and `npm`
-
-Run the following to install the wonderful **[n](https://github.com/tj/n)** NodeJS version manager, and then install NodeJS v12.0.0:
+**For Linux or Mac**: Run the following to install the wonderful **[n](https://github.com/tj/n)** NodeJS version manager, then install NodeJS v12.0.0:
 
 ```bash
 curl -L https://git.io/n-install | bash
@@ -75,7 +74,9 @@ n 12.0.0
 npm --version
 ```
 
-#### Installation and usage.
+**For Windows**: [Download and install NodeJS.org](https://nodejs.org) first
+
+#### 💻 Installation and usage
 
 - Clone or fork the repository, whichever suits you better.
 - Install the dependencies for the project using **`npm install`**
@@ -94,7 +95,7 @@ npm install
 npm run start
 ```
 
-## Upcoming features
+## 🔮 Upcoming features
 
 Check the following places:
 - [Issue Tracker](https://github.com/rslay/ZeroChat/issues)
@@ -106,7 +107,7 @@ Check the following places:
 Contributions, issues, and feature requests are welcome. After cloning and setting up project locally, you can submit 
 a PR to this repo and it will be deployed once it's accepted.
 
-⚠️ It’s good to have descriptive commit messages, or PR titles so that other contributors can better understand your
+It’s good to have descriptive commit messages, or PR titles so that other contributors can better understand your
 commit or the PR Created. Read [conventional commits](https://www.conventionalcommits.org/en/v1.0.0-beta.3/) before 
 making the commit message.
 
