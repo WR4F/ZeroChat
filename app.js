@@ -24,15 +24,14 @@ config.loadConfig()
 // NOTE might have to blacklist things like robots.txt and this from /room names
 app.use('/favicon.ico', express.static(path.join(__dirname, 'public', 'images', 'favicon.ico')));
 
-// FIXME are these both needed?
+// JSON engine ExpressJS
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
-app.use(bodyParser.json()) // support json encoded bodies
-app.use(bodyParser.urlencoded({ extended: true })) // support x-www-form-urlencoded bodies
 
 
 app.use(express.static(path.join(__dirname, "public"))) // NOTE might have to switch to _ prefix to support /rooms
 app.use("/", chatRouter)
+
 
 // catch 404 and forward to error handler
 app.use((req, res, next) => {

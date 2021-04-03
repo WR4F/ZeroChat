@@ -65,3 +65,6 @@ TODO
 
 # next.js build output
 .next
+
+.dockerignore
+Dockerfile

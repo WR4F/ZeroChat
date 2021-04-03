@@ -57,6 +57,7 @@ const getRooms = () => {
 	return new Promise((resolve, reject) => {
 		fs.readFile(ROOMS_FILE, 'utf8', (err, data) => {
 			if (err) throw err
+
 			if (data == null || data == []) {
 				console.error("Error: " + ROOMS_FILE + " is empty or invalid, it should be a list of default rooms seperated by lines. Defaulting to /" + FALLBACK_DEFAULT_ROOM[0])
 				reject()
@@ -84,6 +85,7 @@ const broadcast = (user, message, room, file = undefined) => {
 			name: undefined,
 			mimetype: undefined
 		}
+
 		if (file) {
 			if (file.buffer && file.buffer.length !== 0) {
 				fileData.buffer = file.buffer.toString("base64")
@@ -94,6 +96,7 @@ const broadcast = (user, message, room, file = undefined) => {
 				return false
 			}
 		}
+
 		for (const iUser of users) {
 			if (iUser.room !== room) {
 				continue
@@ -101,6 +104,7 @@ const broadcast = (user, message, room, file = undefined) => {
 			let messageType = "user"
 			let postHandle = ""
 			let postTrip = ""
+
 			if (user == null) {
 				// If the 'user' param is null, that means it's a system message
 				messageType = "system"
@@ -149,6 +153,7 @@ const broadcast = (user, message, room, file = undefined) => {
 				}
 			}
 		}
+
 		resolve('success')
 	})
 }
@@ -156,14 +161,17 @@ const broadcast = (user, message, room, file = undefined) => {
 let sanitizeRoomName = (room) => {
 	room = room.trim().toLowerCase().replace(/[\\|\/]/g, "")
 	room = decodeURI(room)
+
 	if (room.charAt(0) === "_") {
 		room = room.substr(1).trim()
 	}
+
 	return room
 }
 
 let disconnectUser = (user) => {
 	let i = users.indexOf(user)
+
 	if (i > -1) {
 		userFound = true
 		let disconnectMsg = users[i].handle + " (" + users[i].tripcode + ") left."
@@ -173,6 +181,7 @@ let disconnectUser = (user) => {
 		users.splice(i, 1)
 		broadcast(null, disconnectMsg, room)
 	}
+
 	return
 }
 

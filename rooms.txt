@@ -1,7 +1,7 @@
 Hallway
-Español
-Français
-Deutsche
-中文
-हिन्दी
-TheBackrooms
+Non English chat
+Chat-room-1
+Chat-room-2
+Chat-room-3
+Just-another-room
+Others

@@ -5,8 +5,10 @@ const Config = require("./classes/Config")
 let chatCrypto = {
 	CRYPTO_ITERATIONS: 10000,
 	SALT: Config.SECRET_SALT,
+
 	HASH_LENGTH: 6,
 	DIGEST: "sha256",
+
 	KEY_LENGTH: 30,
 	TRIPCODE_LENGTH: 6,
 	EXPECTED_TOKEN_LENGTH: 60
@@ -23,6 +25,7 @@ chatCrypto.genTripcode = (password) => {
 			chatCrypto.CRYPTO_ITERATIONS,
 			chatCrypto.HASH_LENGTH,
 			chatCrypto.DIGEST,
+
 			(error, hash) => {
 				if (error) {
 					reject(error)

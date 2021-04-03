@@ -4,12 +4,15 @@ const dotenv = require('dotenv').config()
 let config = {
 	DEFAULT_THEME: process.env.DEFAULT_THEME,
 	DEFAULT_ROOM: process.env.DEFAULT_ROOM,
+
 	DEFAULT_INLINE_PREVIEW: process.env.DEFAULT_INLINE_PREVIEW.toLowerCase() === 'true',
-	HTTP_PORT: parseInt(process.env.HTTP_PORT), // also used directly as .env in the bin/www file
-	HTTPS_PORT: parseInt(process.env.HTTPS_PORT), // also used directly as .env in the bin/www file
+
+	HTTP_PORT: parseInt(process.env.HTTP_PORT),
+	HTTPS_PORT: parseInt(process.env.HTTPS_PORT), 
+
 	SECRET_SALT: process.env.SECRET_SALT,
 	themes: [],
-	urlPrefix: '/', // not yet a variable
+	urlPrefix: '/' // not yet a variable
 }
 
 config.isValidTheme = (theme) => {
@@ -29,6 +32,7 @@ config.loadThemes = () => {
 						return file.substr(0, file.length - 4)
 					}
 				});
+
 				if (config.isValidTheme(config.DEFAULT_THEME)) {
 					console.log("Themes loaded: " + config.themes);
 					resolve(config.themes)
