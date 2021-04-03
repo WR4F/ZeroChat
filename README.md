@@ -78,22 +78,26 @@ npm --version
 
 #### 💻 Installation and usage
 
-- Clone or fork the repository, whichever suits you better.
-- Install the dependencies for the project using **`npm install`**
-- Configure the environmental variables by renaming the `.env.example` file to `.env` with the respective 
-  values for it. If the platform you're using have support for external environmental variables, for example AWS
-  or heroku or something else, Configure it there, and refrain from configuring `.env`
-- Run the server using **`npm run start`**
-
 Summary of the steps to be done:
 
 ```sh
 git clone https://github.com/rslay/ZeroChat zerochat
 cd zerochat
 npm install
-// configure the ENV variables if needed.
+cp .env.example .env 
+// Change the .env variables if needed
 npm run start
 ```
+
+Explanation:
+
+- Download the repo to your machine: **`git clone https://github.com/rslay/ZeroChat zerochat`**
+  - Enter the new directory with **`cd zerochat`**
+- Install the dependencies for the project using **`npm install` or `yarn install`**
+- Configure the environmental variables by renaming the `.env.example` file to `.env`, e.g. for defaults: **`cp .env.example .env`**
+  - If you're using a Platform as a Service (PaaS), such as **AWS LightSail or Heroku**, configure it using the service's environment variables settings based of values in the `.env.example` file, and refrain from using the `.env` file
+- Run the server using **`npm run start`**
+
 
 ## 🔮 Upcoming features
 
@@ -111,7 +115,7 @@ It’s good to have descriptive commit messages, or PR titles so that other cont
 commit or the PR Created. Read [conventional commits](https://www.conventionalcommits.org/en/v1.0.0-beta.3/) before 
 making the commit message.
 
-## How it works
+## 📔 How it works
 
 Here is the [article that explains how it works](https://justhack.in/stateful-http)!
 
