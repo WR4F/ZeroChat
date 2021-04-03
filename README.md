@@ -44,7 +44,7 @@ Take a look at the [releases](https://github.com/rslay/ZeroChat/releases) for ex
 
 If you want to run the source NodeJS file and tweak it, you can go to [NodeJS.org](https://nodejs.org) to install NodeJS, and then follow along with the steps to self host below!
 
-### Self hosting with docker [Any platform / OS]
+### Self hosting with Docker
 
 Docker is an easy way of containerizing and delivering your applications quickly and easily, in an 
 convenient way. It's really simple to get started with this, with docker handling all the installation
