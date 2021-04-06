@@ -58,21 +58,13 @@ If you want to tweak the program and run the source code on Windows without dock
 
 ### Self hosting with Docker
 
-**Docker mini guide**
-
-- Prepare: `cp .env.example .env`
-- Run: `docker-compose --env-file .env up`
-- Stop: `docker-compose down`
-
-Docker is an easy way of containerizing and delivering your applications quickly and easily, in an 
-convenient way. It's really simple to get started with this, with docker handling all the installation
-and other tasks.
-
-1. Configure the environmental variables by renaming the `.env.example` file to `.env`
+1. Configure the environmental variables by doing `cp .env.example .env`
 2. (Optionally) Edit `.env` with the custom values
 3. Run `docker-compose --env-file .env up` after getting the project and config ready
 
 `docker ps` should show you that the service is running!
+
+Stop the service by running `docker-compose down`.
 
 ### Self Hosting without Docker
 
