@@ -35,7 +35,7 @@ Authentification is done with a password/tripcode system using PBKDF2 hashes.
 Run ZeroChat in just a [few commands with Docker](#self-hosting-with-docker)!
 
 #### Username and Password? But no accounts required!
-- You can login using a name, and enter a "passcode" which is hashed into a unique "tripcode" for your passcode only
+- You can login using a handle of your choosing, and enter a "passcode" which is hashed into a unique "tripcode" for your passcode only
 - A passcode is like a password, but no accounts are needed to enter a room, everyone just proves who they are by their tripcode
 
 #### Rooms
