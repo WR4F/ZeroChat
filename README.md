@@ -28,11 +28,23 @@ Authentification is done with a password/tripcode system using PBKDF2 hashes.
 
 ## Try it by visiting [chat.justhack.in](https://chat.justhack.in)
 
-<a href="https://chat.justhack.in"><img src="https://raw.githubusercontent.com/rslay/ZeroChat/master/image.png" title="Preview of chat login page" style="width: 200px;height: 150px"/></a>
+<a href="https://chat.justhack.in"><img src="https://raw.githubusercontent.com/rslay/ZeroChat/master/image2.png" title="Preview of chat login page" style="width: 200px;height: 150px"/></a>
 
 **It's easy to self-host, and simple to use.** Developed with a security-first mentality.
 
 Run ZeroChat in just a [few commands with Docker](#self-hosting-with-docker)!
+
+#### Username and Password? But no accounts required!
+- You can login using a name, and enter a "passcode" which is hashed into a unique "tripcode" for your passcode only
+- A passcode is like a password, but no accounts are needed to enter a room, everyone just proves who they are by their tripcode
+
+#### Rooms
+- Choose from a preselected list of "public" rooms that are advertised on the front page by clicking the Room textbox twice. 
+- Or, enter any name you want for your room, and you'll "tune" into it like a radio frequency.
+
+You can share a link with `/roomName` at the end of the URL to have your friends join that room.
+
+Wondering [how it's a live chat without javascript](https://justhack.in/stateful-http)?
 
 ## Running & Dependencies
 
@@ -117,7 +129,7 @@ making the commit message.
 
 ## 📔 How it works
 
-Here is the [article that explains how it works](https://justhack.in/stateful-http)!
+Here is the [article that explains how the chat is live without javascript](https://justhack.in/stateful-http)!
 
 ## Show your support
 
