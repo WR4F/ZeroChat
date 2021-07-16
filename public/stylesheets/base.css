@@ -47,6 +47,12 @@ input[type=checkbox] + .forCheckbox {
 input[type=checkbox]:checked + .forCheckbox {
 	color: var(--fg);
 }
+input[type=checkbox] + .forCheckbox::after {
+	content: " ";
+}
+input[type=checkbox]:checked + .forCheckbox::after {
+	content: "🗸";
+}
 input[type=submit]{
 	cursor: pointer;
 }
@@ -58,22 +64,30 @@ select{
 	background-size: 11px 7px;
 }
 input[type=file]{
-	/* height: 30px;
-	padding: 6px;
-	width: 365px;
-	font-size: 14px; */
-	display: none;
+	letter-spacing: -1px;
+	width: 270px;
+}
+input[type=file]::file-selector-button, input[type=file]::-webkit-file-upload-button {
+	letter-spacing: -1px;
+	background-color: var(--bg);
+	color: var(--fg);
+	border: 1px solid var(--fg);
+	border-radius: 3px;
+	font-family: monospace;
+}
+input[type=file]::file-selector-button:hover, input[type=file]::-webkit-file-upload-button:hover {
+	background-color: var(--fg);
+	color: var(--bg);
 }
 label[for=fileupload]{
 	width: auto;
 }
 #uploadsubmit {
 	display: flex;
-	flex-direction: row-reverse;
-	width: 200px;
+	width: 385px;
 }
 #uploadsubmit > input[type=submit] {
-	width: 50%;
+	width: auto;
 }
 #uploadsubmit > label {
 	width: 50%;
@@ -93,7 +107,7 @@ label[for=fileupload]{
 	.combolist{
 		padding-right: 30px;
 	}
-	.combolist:hover,.combolist:active,.combolist:focus{
+	.combolist:hover, .combolist:active, .combolist:focus{
 		background-image: var(--dropdown-arrow);
 		background-repeat: no-repeat;
 		background-position: 95% 50%;
@@ -125,15 +139,15 @@ code {
 #settings{
 	position: absolute;
 	top: 0px;
-	right: 0px;
+	left: 0px;
 	padding: 0px 18px;
 	z-index: 1;
 	text-align: right;
 	background: var(--settings);
 	border: 2px solid var(--border);
+	border-left: 0;
 	border-top: 0;
-	border-right: 0;
-	border-bottom-left-radius: 3px;
+	border-bottom-right-radius: 3px;
 	line-height: initial;
 }
 #settings_options, #checkshow{
@@ -258,39 +272,30 @@ label[for=room]{
 }
 
 /* Message posting page */
-
-div#post-frame-parent {
+iframe#post-frame{
 	z-index: 1;
-	display: grid;
-	width: calc( 300px + 50vw );
-	max-width: calc( 100% - 20px );
-	margin: 0 auto;
-	grid-auto-flow: column;
-	grid-template-columns: calc(100% - 210px) 210px;
-	justify-items: center;
-	align-items: center;
-	justify-content: center;
 	position: relative;
-	left: 8px;
-}
-iframe#post-frame, iframe#upload-frame{
 	height: 60px;
 	width: 100%;
 	margin: 0 auto;
 }
 iframe#settings-frame {
+	z-index: 2;
 	position: fixed;
-	right: 0;
+	left: 0;
 	top: 0;
 	height: 300px;
 	width: 265px;
 }
 #post{
-	margin: 0 auto;
 	display: flex;
-	justify-content: center;
 	align-items: center;
 	height: 100%;
+	width: calc( 300px + 50vw );
+	max-width: calc( 100% - 20px );
+	margin: 0 auto;
+	left: -8px;
+	position: relative;
 }
 #upload{
 	margin: 0 auto;
@@ -312,11 +317,9 @@ iframe#chat-frame{
 }
 
 #chat{
-	padding: 10px;
-	font-size: 18px;
 	width: calc( 300px + 50vw );
 	max-width: calc( 100% - 20px );
-	margin: 50px auto 0 auto;
+	margin: 60px auto 10px auto;
 	display: flex;
 	flex-direction: column-reverse;
 }
@@ -362,6 +365,7 @@ iframe#chat-frame{
 	max-width: 100vw;
 	max-height: initial;
 	width: 100%;
+	transition: 0.1s;
 }
 
 .message > div {
@@ -372,6 +376,10 @@ iframe#chat-frame{
 
 .message.system .message-text {
 	color: var(--system-color);
+}
+
+.filedownload + .message-text {
+	margin-top: 10px;
 }
 
 .error-message {
@@ -423,7 +431,7 @@ iframe#chat-frame{
 		width: 230px;
 	}
 	#loginform > input[type="submit"] {
-		width: 253px;
+		width: 25px;
 	}
 	#loginform {
 		display: grid;
@@ -509,7 +517,7 @@ iframe#chat-frame{
 		padding: 0px 10px;
 		border-top-width: 2px;
 		border-right-width: 2px;
-		border-bottom-left-radius: initial;
+		border-bottom-right-radius: initial;
 		border-top-right-radius: 3px;
 		top: inherit;
 		right: inherit;

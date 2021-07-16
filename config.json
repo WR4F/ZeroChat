@@ -1,0 +1,21 @@
+{
+	"ROOMS": [
+		"Hallway",
+		"Español",
+		"Français",
+		"Deutsche",
+		"中文",
+		"हिन्दी",
+		"TheBackrooms"
+	],
+	"CHAT": {
+		"DEFAULT_THEME": "dark",
+		"DEFAULT_INLINE_PREVIEW": true
+	},
+	"HTTP": {
+		"ADDRESS": "127.0.0.1",
+		"HTTP_PORT": 3000,
+		"HTTPS_PORT": 4443,
+		"USE_HTTPS": false
+	}
+}

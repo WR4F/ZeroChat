@@ -1,7 +1,5 @@
-<div id="post-frame-parent">
-    <iframe allowtransparency="true" id="post-frame" src="<%= postmsg %>?token=<%= user.token %>" autofocus></iframe>
-    <iframe allowtransparency="true" id="upload-frame" src="<%= uploadfile %>?token=<%= user.token %>"></iframe>
-</div>
-<iframe allowtransparency="true" id="chat-frame" src="<%= chatmsgs %>?token=<%= user.token %>"></iframe>
-<iframe allowtransparency="true" id="settings-frame" <% if (typeof snapbottom != "undefined" && snapbottom) { %>
+<iframe allowtransparency="true" tabindex="1" id="post-frame" src="<%= writemsg %>?token=<%= user.token %>" autofocus></iframe>
+
+<iframe allowtransparency="true" tabindex="-1" id="chat-frame" src="<%= chatmsgs %>?token=<%= user.token %>"></iframe>
+<iframe allowtransparency="true" tabindex="-1" id="settings-frame" <% if (typeof snapbottom != "undefined" && snapbottom) { %>
     class="snapbottom" <% } %> src="<%= settingsPanel %>?token=<%= user.token %>"></iframe>
