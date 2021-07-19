@@ -13,11 +13,15 @@
 	<% } else { %>
 	<link rel='stylesheet' href='/themes/<%= locals.config.DEFAULT_THEME %>.css' />
 	<% } %>
+	
+	<% if (typeof redirect != "undefined") { %>
+	<meta http-equiv="refresh" content="3; url=<%= redirect %>">
+	<% } %>
 </head>
 
 <body>
 	<% if (typeof url != "undefined" && !url.startsWith("_")) { %>
-	<a href="/<%= url %>" title="URL" id="logo">
+	<a tabindex="-1" href="/<%= url %>" title="URL" id="logo">
 		<img src="/images/z_black.png" alt="ZeroChat" title="ZeroChat">
 		<span>/<%= url %></span>
 	</a>

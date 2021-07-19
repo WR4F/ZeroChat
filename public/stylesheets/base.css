@@ -10,7 +10,7 @@ html,body{
 }
 *{
 	font-family: monospace;
-	font-size: 18px;
+	font-size: 16px;
 	color: var(--fg);
 }
 a{
@@ -25,8 +25,8 @@ input, textarea, select, label[for=fileupload], .forCheckbox{
 	padding: initial;
 	border: 2px solid var(--border);
 	background-color: var(--bg);
-	padding: 9px;
-	border-radius: 3px;
+	padding: 7px;
+	border-radius: 4px;
 	display: inline-block;
 	position: relative;
 	margin: 0 2px;
@@ -47,6 +47,12 @@ input[type=checkbox] + .forCheckbox {
 input[type=checkbox]:checked + .forCheckbox {
 	color: var(--fg);
 }
+input[type=checkbox] + .forCheckbox::after {
+	content: " ";
+}
+input[type=checkbox]:checked + .forCheckbox::after {
+	content: "🗸";
+}
 input[type=submit]{
 	cursor: pointer;
 }
@@ -58,22 +64,30 @@ select{
 	background-size: 11px 7px;
 }
 input[type=file]{
-	/* height: 30px;
-	padding: 6px;
-	width: 365px;
-	font-size: 14px; */
-	display: none;
+	letter-spacing: -1px;
+	width: 270px;
+}
+input[type=file]::file-selector-button, input[type=file]::-webkit-file-upload-button {
+	letter-spacing: -1px;
+	background-color: var(--bg);
+	color: var(--fg);
+	border: 1px solid var(--fg);
+	border-radius: 3px;
+	font-family: monospace;
+}
+input[type=file]::file-selector-button:hover, input[type=file]::-webkit-file-upload-button:hover {
+	background-color: var(--fg);
+	color: var(--bg);
 }
 label[for=fileupload]{
 	width: auto;
 }
 #uploadsubmit {
 	display: flex;
-	flex-direction: row-reverse;
-	width: 200px;
+	width: 385px;
 }
 #uploadsubmit > input[type=submit] {
-	width: 50%;
+	width: auto;
 }
 #uploadsubmit > label {
 	width: 50%;
@@ -89,15 +103,22 @@ label[for=fileupload]{
 	content: "Uploading...";
 	transition: .4s ease all!important;
 }
+/* For chrome/chromium browsers only */
+input[type=file]{
+	padding: 5px;
+}
 @-moz-document url-prefix() { /* Firefox doesn't show an arrow (nor the list by default) */
 	.combolist{
 		padding-right: 30px;
 	}
-	.combolist:hover,.combolist:active,.combolist:focus{
+	.combolist:hover, .combolist:active, .combolist:focus{
 		background-image: var(--dropdown-arrow);
 		background-repeat: no-repeat;
 		background-position: 95% 50%;
 		background-size: 11px 7px;
+	}
+	input[type=file]{
+		padding: 7px;
 	}
 }
 form {
@@ -125,15 +146,15 @@ code {
 #settings{
 	position: absolute;
 	top: 0px;
-	right: 0px;
+	left: 0px;
 	padding: 0px 18px;
 	z-index: 1;
 	text-align: right;
 	background: var(--settings);
 	border: 2px solid var(--border);
+	border-left: 0;
 	border-top: 0;
-	border-right: 0;
-	border-bottom-left-radius: 3px;
+	border-bottom-right-radius: 3px;
 	line-height: initial;
 }
 #settings_options, #checkshow{
@@ -258,39 +279,30 @@ label[for=room]{
 }
 
 /* Message posting page */
-
-div#post-frame-parent {
+iframe#post-frame{
 	z-index: 1;
-	display: grid;
-	width: calc( 300px + 50vw );
-	max-width: calc( 100% - 20px );
-	margin: 0 auto;
-	grid-auto-flow: column;
-	grid-template-columns: calc(100% - 210px) 210px;
-	justify-items: center;
-	align-items: center;
-	justify-content: center;
 	position: relative;
-	left: 8px;
-}
-iframe#post-frame, iframe#upload-frame{
 	height: 60px;
 	width: 100%;
 	margin: 0 auto;
 }
 iframe#settings-frame {
+	z-index: 2;
 	position: fixed;
-	right: 0;
+	left: 0;
 	top: 0;
 	height: 300px;
 	width: 265px;
 }
 #post{
-	margin: 0 auto;
 	display: flex;
-	justify-content: center;
 	align-items: center;
 	height: 100%;
+	width: calc( 300px + 50vw );
+	max-width: calc( 100% - 20px );
+	margin: 0 auto;
+	left: -8px;
+	position: relative;
 }
 #upload{
 	margin: 0 auto;
@@ -312,17 +324,15 @@ iframe#chat-frame{
 }
 
 #chat{
-	padding: 10px;
-	font-size: 18px;
 	width: calc( 300px + 50vw );
 	max-width: calc( 100% - 20px );
-	margin: 50px auto 0 auto;
+	margin: 60px auto 10px auto;
 	display: flex;
 	flex-direction: column-reverse;
 }
 
 .message {
-	padding: 10px 5px;
+	padding: 8px 5px;
 	border-top: 1px solid var(--message-separator);
 	display: flex;
 }
@@ -351,19 +361,101 @@ iframe#chat-frame{
 .message.self > .handle{
 	color: var(--self-color)
 }
-
-.message .filedownload > :nth-child(2) {
-	margin-top: 10px;
-	max-width: 25rem;
-	max-height: 25rem;
+.message:hover{
+	background-color: var(--bg-alt);
 }
 
-.message .filedownload > img:hover {
-	max-width: 100vw;
-	max-height: initial;
-	width: 100%;
+.filedownload{
+	display: grid;
+	grid-auto-flow: row;
+	justify-content: center;
+	padding: 0px;
 }
 
+.message .filedownload > span {
+	margin: 0 0 -7px 0;
+    min-width: 0px;
+    position: absolute;
+	opacity: 0;
+	font-size: 14px;
+}
+.message .filedownload:target > span {
+	position: fixed;
+    margin-bottom: 0px;
+    color: white;
+    z-index: 1;
+    width: 100%;
+    height: initial;
+    left: 0;
+    bottom: 9px;
+    text-align: center;
+	opacity: 1;
+    transition: 0.3s ease all;
+}
+
+.message .filedownload > a > img, .message .filedownload video {
+	/* margin-top: 5px; */
+	max-width: 20rem;
+	max-height: 20rem;
+}
+
+.message .filedownload img,.message .filedownload video,.message .filedownload audio {
+	border-radius: 4px;
+}
+.message .filedownload img {
+	cursor: pointer;
+}
+@keyframes popIn {
+	from {
+		max-width: 0;
+		max-height: 0;
+		opacity: 0;
+	}
+	to {}
+}
+.message .filedownload:target a.previewOpen img {
+	max-width: calc(100vw - 130px);
+	max-height: calc(100vh - 130px);
+	position: fixed;
+	margin: 0;
+	display: block;
+	left: 50%;
+	top: calc(50% + 30px);
+	transform: translate(-50%,-50%);
+	cursor: initial;
+	border-radius: 0px;
+    animation: 0.3s popIn ease 1;
+    /* animation-timing-function: cubic-bezier(0.25,0.1,0.25,1.5); */
+}
+.message .filedownload a.previewClose {
+	pointer-events: none;
+	display: none;
+	position: fixed;
+	margin: 0;
+	background: rgba(0,0,0,0.85);
+	transition: 0.2s;
+	width: 100vw;
+	height: 100vh;
+	top: 0;
+	left: 0;
+	transition: 0.2s ease opacity;
+	opacity: 0;
+	min-width: 100vw;
+	min-height: 100vh;
+}
+@keyframes fadeIn {
+	from {opacity: 0;}
+	to {opacity: 1;}
+}
+.message .filedownload:target a.previewClose {
+	pointer-events: initial;
+	display: block;
+	opacity: 1;
+	animation: fadeIn 0.3s 1;
+}
+.message .filedownload:target {
+	z-index: 1;
+}
 .message > div {
 	display: flex;
 	flex-direction: column;
@@ -372,6 +464,10 @@ iframe#chat-frame{
 
 .message.system .message-text {
 	color: var(--system-color);
+}
+
+.filedownload + .message-text {
+	margin-top: 10px;
 }
 
 .error-message {
@@ -386,32 +482,7 @@ iframe#chat-frame{
 	float: left;
 }
 
-.filedownload{
-	display: grid;
-	grid-auto-flow: row;
-	justify-content: center;
-	align-items: center;
-	justify-items: center;
-	border: 2px solid var(--border);
-	border-radius: 3px;
-	padding: 10px;
-}
-
-.filedownload span {
-	margin: 0;
-}
-
-
-@media only screen and (max-width: 1100px) {
-	/* {
-		font-size: 14px;
-	}
-	input, textarea, label[for="fileupload"], .forCheckbox {
-		padding: 5px;
-	}
-	select {
-		padding: 5px 12px 5px 5px;
-	} */
+@media only screen and (max-width: 1200px) {
 	form {
 		gap: 0px;
 	}
@@ -423,7 +494,7 @@ iframe#chat-frame{
 		width: 230px;
 	}
 	#loginform > input[type="submit"] {
-		width: 253px;
+		width: 252px;
 	}
 	#loginform {
 		display: grid;
@@ -455,15 +526,34 @@ iframe#chat-frame{
 	.chat{
 		font-size: 14px;
 	}
+	input[type="file"]{
+		width: auto;
+		padding: 7px 0 7px 5px;
+	}
+	input[type=file]::file-selector-button, input[type=file]::-webkit-file-upload-button {
+		display: none;
+	}
+	#uploadsubmit {
+		display: flex;
+		width: 130px;
+	}
+	@-moz-document url-prefix() { /* Firefox doesn't show an arrow (nor the list by default) */
+		#uploadsubmit {
+			width: 155px;
+		}
+	}
+	form#post * {
+		font-size: 14px;
+	}
 }
 
 /* Smaller text for smaller screen */
 @media only screen and (max-width: 600px) {
+	*{
+		font-size: 14px;
+	}
 	div#post-frame-parent{
 		grid-template-columns: calc(100% - 210px) 130px;
-	}
-	#chat * {
-		font-size: 14px;
 	}
 	.message {
 		padding: 7px 5px;
@@ -471,26 +561,6 @@ iframe#chat-frame{
 	.message .filedownload > :nth-child(2) {
 		max-width: 100%;
 		max-height: 100%;
-	}
-}
-@media only screen and (max-width: 500px) {
-	div#post-frame-parent{
-		grid-template-columns: calc(100% - 130px) 130px;
-	}
-}
-@media only screen and (max-width: 199px) {
-	#uploadsubmit *, #uploadsubmit label[for="fileupload"] {
-		font-size: 12px;
-		padding: 5px;
-	}
-	.error-message{
-		font-size: 12px;
-	}
-}
-@media only screen and (max-width: 370px) {
-	#messagebox {
-		font-size: 12px;
-		padding: 5px;
 	}
 }
 
@@ -509,7 +579,7 @@ iframe#chat-frame{
 		padding: 0px 10px;
 		border-top-width: 2px;
 		border-right-width: 2px;
-		border-bottom-left-radius: initial;
+		border-bottom-right-radius: initial;
 		border-top-right-radius: 3px;
 		top: inherit;
 		right: inherit;

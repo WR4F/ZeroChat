@@ -65,3 +65,9 @@ TODO
 
 # next.js build output
 .next
+
+# keys and certs for https
+*.key
+*.crt
+*.csr
+*.pem

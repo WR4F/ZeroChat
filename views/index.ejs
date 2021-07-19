@@ -25,9 +25,9 @@
 
 			<label for="room">Room <small class="subtle">(Double-click for list)</small></label>
 
-			<input name="room" id="room" type="text" maxlength="<%= roomNameMaxlen %>" placeholder='/Hallway'
+			<input name="room" id="room" type="text" maxlength="<%= roomNameMaxlen %>" placeholder='/<%= defaultRoom %>'
 				list="default_rooms" autocomplete="off" class="combolist" tabindex="3"
-				title='The chatroom you will join, typing "/" shows a list (Max: <%= roomNameMaxlen %> characters)'
+				title='Chatroom name to enter (Max: <%= roomNameMaxlen %> characters)'
 				<% if(url != ""){ %>value="/<%= url %>" <% } %>>
 
 			<datalist name="room" id="default_rooms">
