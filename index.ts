@@ -3,11 +3,9 @@ const express = require('express');
 import { Request, Response } from 'express';
 const path = require('path');
 const Config = require('./utils/configSetup')
-
-// Host address
-const host = Config.HOST_ADDRESS || '127.0.0.1'
-// If using HTTPS/HTTP, use specified port or default to common port
-const port = (Config.USE_HTTPS ? Config.HTTPS_PORT || 443 : Config.HTTP_PORT || 80)
+const http = require('http');
+const https = require('https');
+const fs = require('fs');
 
 const bodyParser = require('body-parser')
 const chatRouter = require('./routes/chat')
@@ -29,19 +27,11 @@ Config.loadConfig()
 
 app.use('/favicon.ico', express.static(path.join(__dirname, 'public', 'images', 'favicon.ico')));
 app.use('/robots.txt', express.static(path.join(__dirname, 'public', 'robots.txt')));
-// JSON engine ExpressJS
-// app.use(express.json())
-app.use(express.urlencoded({ extended: false }))
 
+app.use(express.urlencoded({ extended: false }))
 
 app.use(express.static(path.join(__dirname, 'public')))
 app.use('/', chatRouter)
-// TODO Blacklist things like robots.txt from /room names
-const BLACKLISTED_ROOM_NAMES = [
-	'robots.txt',
-	'favicon.ico',
-	'public'
-]
 
 // Catch 404s and pass to error handler
 app.use((req: Request, res: Response, next: Function) => {
@@ -52,19 +42,47 @@ app.use((req: Request, res: Response, next: Function) => {
 app.use((err: any, req: Request, res: Response, next: Function) => {
 	// Set locals, only providing error in development
 	res.locals.message = err.message
-	res.locals.error = req.app.get('env') === 'development' ? err.status : {}
+	res.locals.error = {}
 
 	// Render the error page
 	res.status(err.status || 500)
 	res.render('layout', { page: 'error', url: '' })
 })
 
-// TODO Should listen on http port and redirect to https port? perhaps an option
-app.listen(port, host, (err: any) => {
-	if (err) {
-		console.error(err)
-		process.exit(1)
-	}
-	console.log(`Server listening at ${(Config.USE_HTTPS ? "https://" : "http://")}${host}:${port}`)
-})
+// Host address
+const host = Config.HOST_ADDRESS || '0.0.0.0'
+
+if (Config.USE_HTTPS === 'true') { // Using HTTPS
+	if (!Config.HTTPS_PRIV_KEY) { throw new Error("Using HTTPS, but missing HTTPS_PRIV_KEY path") }
+	if (!Config.HTTPS_CERT) { throw new Error("Using HTTPS, but missing HTTPS_CERT path") }
+	const credentials = {
+		key: fs.readFileSync(Config.HTTPS_PRIV_KEY, 'utf8'),
+		cert: fs.readFileSync(Config.HTTPS_CERT, 'utf8')
+	};
+	const httpsServer = https.createServer(credentials, app);
+	httpsServer.listen(Config.HTTPS_PORT, (err: any) => {
+		if (err) {
+			console.error(err)
+			process.exit(1)
+		}
+		console.log(`Server listening at https://${host}:${Config.HTTPS_PORT}`)
+	})
+
+	// Redirect HTTP to HTTPS
+	const httpRedirect = express();
+	httpRedirect.all('*', (req: Request, res: Response) => {
+		res.redirect(300, `https://${req.hostname}:${Config.HTTPS_PORT}${req.url}`)
+	});
+	const httpServer = http.createServer(httpRedirect);
+	httpServer.listen(Config.HTTP_PORT, () => console.log(`HTTP server listening and redirecting on port ${Config.HTTP_PORT}`));
+} else { // Using HTTP
+	const httpServer = http.createServer(app);
+	httpServer.listen(Config.HTTP_PORT, (err: any) => {
+		if (err) {
+			console.error(err)
+			process.exit(1)
+		}
+		console.log(`Server listening at http://${host}:${Config.HTTP_PORT}`)
+	})
+}
 module.exports = app

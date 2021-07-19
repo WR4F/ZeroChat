@@ -16,9 +16,15 @@ const MAX_FILE_SIZE = 5242880 // 5 Mb // TODO make some kind of configSetup var
 const MAX_HANDLE_LENGTH = 15
 const MAX_PASSCODE_LENGTH = 64
 const MAX_ROOMNAME_LENGTH = 24
-const URL_PREFIX = ConfigSetup.urlPrefix // TODO Support any prefix, replace all / in ejs files with var from cfg file
+const URL_PREFIX = ConfigSetup.urlPrefix // TODO Support any prefix, replace all / in view files with var from cfg file
 const CONNECT_DELAY_TIMEOUT = 20000 // How long to wait before disconnecting user if they never get past chatroom page
 const PATHS = Object.values(ROUTES) // Array containing only the values of ROUTES
+
+const BLACKLISTED_ROOM_NAMES = [
+	'robots.txt',
+	'favicon.ico',
+	'public'
+]
 
 type FileUpload = {
 	data: Buffer | string | null,
@@ -26,7 +32,8 @@ type FileUpload = {
 	name: string | null,
 	mimetype: string | null,
 	size: number | null,
-	truncated: boolean | null
+	truncated: boolean | null,
+	hrefImgId: string | null
 }
 
 interface ZCRequest extends Request {
@@ -53,6 +60,7 @@ const broadcast = async (user: typeof User | null, message: string, room: string
 			file.type = file.mimetype.substr(0, file.mimetype.indexOf('/'))
 			file.name = file.name
 			file.mimetype = file.mimetype
+			file.hrefImgId = ( file.type == "image" ? Math.random().toString(16) : "" )
 		} else {
 			return false // File is present but one of it's attributes is missing
 		}
@@ -100,16 +108,17 @@ const broadcast = async (user: typeof User | null, message: string, room: string
 	}
 }
 
-let sanitizeRoomName = (room: string) => {
+const sanitizeRoomName = (room: string) => {
 	room = room.trim().toLowerCase().replace(/[\\|\/]/g, "")
 	room = decodeURI(room)
 
-	if (room.charAt(0) === "_") {
-		throw new Error("Room has _ at start of name, shouldn't be possible, crashing for security")
+	while (room.charAt(0) === "_" || room.trim().length < room.length) {
+		if (room.charAt(0) === "_") room = room.substr(1).trim()
+		else room = room.trim()
 	}
 
 	// Use the default room if none is specified
-	if (room === "" || room == null) room = DEFAULT_ROOM
+	if (room == null) room = ''
 
 	return room
 }
@@ -149,6 +158,7 @@ const sanitizeRequest = (req: ZCRequest) => {
 		req.body.handle = req.body.handle.trim()
 		req.body.passcode = req.body.passcode.trim()
 		req.body.room = sanitizeRoomName(req.body.room)
+		if (req.body.room == "") req.body.room = sanitizeRoomName(DEFAULT_ROOM)
 	}
 	// Settings sanitization
 	req.body.setSettings = (req.body.setSettings && req.body.setSettings.toString() == 'true')
@@ -165,12 +175,16 @@ router.all("*", (req: ZCRequest, res: Response, next: Function) => {
 
 // File upload handling
 const filesLimitHandler = (req: ZCRequest, res: Response, next: Function) => {
+	let user = getUserByToken(req.query.token as string)
+	if (!user) { return res.render(VIEWS.ERROR, ERRORS.INVALID_TOKEN) }
+
 	if (req.files && Object.keys(req.files) && Object.keys(req.files).length > 1) {
 		// Can only upload one file
 		return res.render(VIEWS.LAYOUT, {
 			page: VIEWS.ERROR_MESSAGE,
 			url: "_hidden",
 			error: "Cannot upload more than one file.",
+			user: user,
 			redirect: URL_PREFIX + ROUTES.WRITE_MESSAGE + "?token=" + req.body.token + (req.body.message ? "&msg=" + req.body.message : "")
 		})
 	} else {
@@ -179,6 +193,7 @@ const filesLimitHandler = (req: ZCRequest, res: Response, next: Function) => {
 			page: VIEWS.ERROR_MESSAGE,
 			url: "_hidden",
 			error: "Cannot upload files over " + MAX_FILE_SIZE / 1048576 + " MBs.",
+			user: user,
 			redirect: URL_PREFIX + ROUTES.WRITE_MESSAGE + "?token=" + req.body.token + (req.body.message ? "&msg=" + req.body.message : "")
 		})
 	}
@@ -189,6 +204,8 @@ router.use(fileUploader({ useTempFiles: false, limits: { files: 1, fileSize: 524
 // POST REQUEST VALIDATION
 // Uses "handle", "passcode", "room", "theme", "url"
 router.post("*", async (req: ZCRequest, res: Response, next: Function) => {
+	req = sanitizeRequest(req)
+
 	if (req.files && req.files.fileupload) {
 		if (req.files.fileupload.truncated) return; // File is too large
 		req.file = req.files.fileupload as FileUpload
@@ -201,8 +218,8 @@ router.post("*", async (req: ZCRequest, res: Response, next: Function) => {
 	if (req.url.startsWith(URL_PREFIX + ROUTES.WRITE_MESSAGE))
 		isPosting = true
 
+
 	let user = getUserByToken(req.query.token as string) || undefined
-	req = sanitizeRequest(req)
 
 	// Disconnect if message is too large
 	if (req.message && req.message.length > MAX_MESSAGE_LENGTH) {
@@ -225,6 +242,7 @@ router.post("*", async (req: ZCRequest, res: Response, next: Function) => {
 				page: VIEWS.ERROR_MESSAGE,
 				url: "_hidden",
 				error: "Invalid theme",
+				user: user,
 				redirect: URL_PREFIX + ROUTES.SETTINGS + "?token=" + req.body.token
 			})
 		}
@@ -236,6 +254,7 @@ router.post("*", async (req: ZCRequest, res: Response, next: Function) => {
 			page: VIEWS.ERROR_MESSAGE,
 			url: '_hidden',
 			error: 'Cannot post to this page.',
+			user: user,
 			redirect: URL_PREFIX
 		})
 	} else if (isPosting) {
@@ -245,14 +264,14 @@ router.post("*", async (req: ZCRequest, res: Response, next: Function) => {
 				page: VIEWS.ERROR_MESSAGE,
 				url: '_hidden',
 				error: 'Message or file required.',
+				user: user,
 				redirect: URL_PREFIX + ROUTES.WRITE_MESSAGE + "?token=" + req.body.token
 			})
 		}
 		/* Viewing the post page and handling possible file uploads, good to continue */
 		return next()
 	} else if (req.url.substr(0, (URL_PREFIX + "_").length) !== URL_PREFIX + "_") {
-		// TODO Figure out, is this for joining room iframes and applying settings only?
-		// Check if the user is sending an update to their settings or not
+		// Check whether the user is sending an update to their settings
 		if (req.body.setSettings && req.body.join === undefined) {
 			// Reload front page with settings applied
 			return res.render(VIEWS.LAYOUT, {
@@ -264,17 +283,18 @@ router.post("*", async (req: ZCRequest, res: Response, next: Function) => {
 				inlineView: req.body.inlineView,
 				setSettings: req.body.setSettings,
 				url: sanitizeRoomName(req.url),
-				rooms: ROOMS
+				rooms: ROOMS,
+				defaultRoom: DEFAULT_ROOM
 			})
 		} else if (req.body.handle === ""
-			|| req.body.passcode === ""
-			|| req.body.room === "") {
+			|| req.body.passcode === "") {
 			// FIXME Shouldn't this check if 'isPosting' is true? Or is this joining?
 			// User is missing a required field
 			return res.render(VIEWS.LAYOUT, {
 				page: VIEWS.ERROR_MESSAGE,
 				url: "_hidden",
 				error: "Field missing",
+				user: user,
 				redirect: URL_PREFIX
 			})
 		} else if ((req.body.handle && req.body.handle.length > MAX_HANDLE_LENGTH)
@@ -285,6 +305,7 @@ router.post("*", async (req: ZCRequest, res: Response, next: Function) => {
 				page: VIEWS.ERROR_MESSAGE,
 				url: "_hidden",
 				error: "A field you entered was too long",
+				user: user,
 				redirect: URL_PREFIX
 			})
 		} else if (getUserByHandle(req.body.handle, req.body.room) != undefined) {
@@ -293,6 +314,7 @@ router.post("*", async (req: ZCRequest, res: Response, next: Function) => {
 				page: VIEWS.ERROR_MESSAGE,
 				url: "_hidden",
 				error: "Someone with that handle is already in /" + req.body.room,
+				user: user,
 				redirect: URL_PREFIX
 			})
 		}
@@ -303,6 +325,16 @@ router.post("*", async (req: ZCRequest, res: Response, next: Function) => {
 /* MAIN LOGIN PAGE */
 let MAIN_LOGIN_REGEX = new RegExp(`${URL_PREFIX}(?!_).*`) // Matches /url but not /_url
 router.get(MAIN_LOGIN_REGEX, (req: ZCRequest, res: Response, next: Function) => {
+	req.url = sanitizeRoomName(req.url)
+	if (BLACKLISTED_ROOM_NAMES.includes(req.url)) {
+		return res.render(VIEWS.LAYOUT, {
+			page: VIEWS.ERROR_MESSAGE,
+			url: "_hidden",
+			error: "Invalid room " + req.url,
+			redirect: URL_PREFIX
+		})
+	}
+
 	return res.render(VIEWS.LAYOUT, {
 		page: VIEWS.FRONT_PAGE,
 		handleMaxlen: MAX_HANDLE_LENGTH,
@@ -312,13 +344,36 @@ router.get(MAIN_LOGIN_REGEX, (req: ZCRequest, res: Response, next: Function) => 
 		inlineView: (req.body.inlineView === undefined ? ConfigSetup.DEFAULT_INLINE_PREVIEW : req.body.inlineView),
 		setSettings: req.body.setSettings,
 		url: req.url,
-		rooms: ROOMS
+		rooms: ROOMS,
+		defaultRoom: DEFAULT_ROOM
 	})
 })
 
 /* IFRAMES PRECHECK */
 router.get(URL_PREFIX + "_*", (req: ZCRequest, res: Response, next: Function) => {
 	// If we're supposed to load an iframe in the chatroom view
+	let knownRoute = false
+	const urlPath = req.url.substr(URL_PREFIX.length, (req.url.indexOf('?') != -1 ? req.url.indexOf('?') - 1 : req.url.length)).trim()
+	for (const key in ROUTES) {
+		if (urlPath == ROUTES[key]) {
+			knownRoute = true
+		}
+	}
+	if (!knownRoute) {
+		return res.render(VIEWS.LAYOUT, {
+			page: VIEWS.FRONT_PAGE,
+			handleMaxlen: MAX_HANDLE_LENGTH,
+			passMaxlen: MAX_PASSCODE_LENGTH,
+			roomNameMaxlen: MAX_ROOMNAME_LENGTH,
+			theme: req.body.theme || ConfigSetup.DEFAULT_THEME,
+			inlineView: (req.body.inlineView === undefined ? ConfigSetup.DEFAULT_INLINE_PREVIEW : req.body.inlineView),
+			setSettings: req.body.setSettings,
+			url: sanitizeRoomName(req.url),
+			rooms: ROOMS,
+			defaultRoom: DEFAULT_ROOM
+		})
+	}
+
 	if (req.query.token != null && req.query.token.length === Security.EXPECTED_TOKEN_LENGTH) {
 		return next()
 	} else {

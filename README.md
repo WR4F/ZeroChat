@@ -102,6 +102,24 @@ Explanation:
   - If you're using a Platform as a Service (PaaS), such as **AWS LightSail or Heroku**, configure it using the service's environment variables settings based of values in the `.env.example` file, and refrain from using the `.env` file
 - Run the server using **`npm run start`**
 
+## ⚠ Common Issues
+
+### Nginx Issues
+
+Proxying the requests through **Nginx** can be a bit problematic, since you have to turn `proxy_buffering off;` in your `location {...}` block.
+
+Example:
+```conf
+server {
+        server_name chat.example.com;
+        location / {
+                proxy_buffering off; # Fixes the issue!
+                proxy_pass http://127.0.0.1:8000; # ZeroChat server running locally on port 8000
+        }
+        listen 80; # Nginx listening on port 80
+}
+```
+
 
 ## 🔮 Upcoming features
 

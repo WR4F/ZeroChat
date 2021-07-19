@@ -1,8 +1,9 @@
 :root {
-	--bg: #101010;
+	--bg: #222222;
+	--bg-alt: #212121;;
 	--fg: #c0c0c0;
 	--border: #f0f0f0bd;
-	--message-separator: #88888833;
+	--message-separator: #88888822;
 	--handle-color: #fa8072;
 	--self-color: #4682b4;
 	--system-color: #46b498;

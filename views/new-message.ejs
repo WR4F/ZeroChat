@@ -1,19 +1,22 @@
-<div class="message <%= messageType %>" title="<%= timestamp %>">
-	<span class="tripcode"><%= tripcode %></span>
-	<span class="handle"><%= handle %></span>
+<div class="message <%= messageType %>">
+	<span title="<%= timestamp %>" class="tripcode"><%= tripcode %></span>
+	<span title="<%= timestamp %>" class="handle"><%= handle %></span>
 	<div>
 		<% if (typeof file != "undefined") { %>
-		<div class="filedownload">
+		<div class="filedownload" id="<%= file.hrefImgId %>">
 			<% if (typeof inlineView != "undefined") { %>
 				<% if (file.type == "image") { %>
-				<span><%= file.name %></span>
-				<img title="<%= file.name %>" alt="<%= file.name %>" src="data:<%= file.mimetype %>;base64,<%= file.data %>" />
+				<span id="<%= file.hrefImgId %>_close"><%= file.name %></span>
+				<a class="previewClose" href="#<%= file.hrefImgId %>_close"></a>
+				<a class="previewOpen" href="#<%= file.hrefImgId %>">
+					<img download="<%= file.name %>" alt="<%= file.name %>" src="data:<%= file.mimetype %>;base64,<%= file.data %>"/>
+				</a>
 				<% } else if (file.type == "video") { %>
 				<span><%= file.name %></span>
-				<video controls title="<%= file.name %>" src="data:<%= file.mimetype %>;base64,<%= file.data %>"></video>
+				<video controls src="data:<%= file.mimetype %>;base64,<%= file.data %>"></video>
 				<% } else if (file.type == "audio") { %>
 				<span><%= file.name %></span>
-				<audio controls title="<%= file.name %>">
+				<audio controls>
 					<source src="data:<%= file.mimetype %>;base64,<%= file.data %>">
 				</audio>
 				<% } else { %>

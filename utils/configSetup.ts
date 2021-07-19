@@ -1,11 +1,22 @@
 const fs = require('fs')
 const dotenv = require('dotenv').config()
-const ConfigJSON = require('../config.json')
+
+if (process.env.ROOMS && process.env.ROOMS.length == 0) {
+	throw new Error("No rooms set in .env file.");
+}
+
+if (process.env.SECRET_SALT == "" || process.env.SECRET_SALT == null) {
+	console.info("INFO: You are not using a salt for passcode hashing, a randomly generated salt will be used until you set a SECRET_SALT in the .env file and restart ZeroChat.");
+}
+const ROOMS: String[] = (process.env.ROOMS ? process.env.ROOMS.split(",") : [])
+if (ROOMS.length == 0) {
+	console.info("INFO: You have no rooms set for users to see publicly, none will be listed until you set a list of one or more comma separated ROOMS in the .env file and restart ZeroChat.");
+}
 
 let configData = {
-	DEFAULT_THEME: ConfigJSON.CHAT.DEFAULT_THEME,
-	DEFAULT_ROOM: ConfigJSON.ROOMS[0],
-	ROOMS: ConfigJSON.ROOMS,
+	DEFAULT_THEME: process.env.DEFAULT_THEME || 'light',
+	DEFAULT_ROOM: (ROOMS && ROOMS[0] ? ROOMS[0] : null),
+	ROOMS: ROOMS,
 
 	ROUTES: {
 		MAIN: '',
@@ -31,13 +42,16 @@ let configData = {
 		INVALID_REQUEST: { message: "Invalid Request", error: "400" },
 	},
 
-	DEFAULT_INLINE_PREVIEW: ConfigJSON.CHAT.DEFAULT_INLINE_PREVIEW,
+	DEFAULT_INLINE_PREVIEW: process.env.DEFAULT_INLINE_PREVIEW,
 
-	ADDRESS: ConfigJSON.HTTP.ADDRESS,
-	HTTP_PORT: ConfigJSON.HTTP.HTTP_PORT,
-	HTTPS_PORT: ConfigJSON.HTTP.HTTPS_PORT,
-	USE_HTTPS: ConfigJSON.HTTP.USE_HTTPS,
-
+	ADDRESS: process.env.ADDRESS,
+	HTTP_PORT: process.env.HTTP_PORT,
+	HTTPS_PORT: process.env.HTTPS_PORT,
+	USE_HTTPS: process.env.USE_HTTPS,
+	
+	HTTPS_PRIV_KEY: process.env.ENCRYPTION_HTTPS_PRIV_KEY,
+	HTTPS_CERT: process.env.ENCRYPTION_HTTPS_CERT,
+	
 	// Either use a secret salt or a random string
 	SECRET_SALT: process.env.SECRET_SALT || Math.random().toString(36).substring(16),
 	themes: [] as String[],
