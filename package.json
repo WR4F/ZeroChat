@@ -12,7 +12,7 @@
     "express": "~4.17",
     "express-fileupload": "^1.2.1",
     "expressjs": "^1.0.1",
-    "http-errors": "~1.8.0",
+    "http-errors": "~2.0.0",
     "https": "^1.0.0",
     "ts-node": "^9.1.1"
   },
