@@ -26,7 +26,7 @@ Authentification is done with a password/tripcode system using PBKDF2 hashes.
 
 ## Try it by visiting [chat.justhack.in](https://chat.justhack.in)
 
-<a href="https://chat.justhack.in"><img src="https://raw.githubusercontent.com/rslay/ZeroChat/master/image2.png" title="Preview of chat login page" style="width: 200px;height: 150px"/></a>
+<a href="https://chat.justhack.in"><img src="https://raw.githubusercontent.com/rslay/ZeroChat/master/image2.png" title="Preview of chat login page" style="height: 200px"/></a>
 
 **It's easy to self-host, and simple to use.** Developed with a security-first mentality.
 
