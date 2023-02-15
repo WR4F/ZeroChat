@@ -551,7 +551,7 @@ router.get(URL_PREFIX + ROUTES.CHAT_MESSAGES, (req: ZCRequest, res: Response, ne
 				user.frames.chat.write(WHITESPACE_BITS)
 				keepAliveInterval = setInterval(() => {
 					if (keepAliveInterval) user.frames.chat.write("\0") // null byte sent on an interval to the browser to keep the TCP connection alive
-				}, 10000)
+				}, 1000)
 			})
 
 		broadcast(null, user.handle + " (" + user.tripcode + ") joined /" + user.room + ".", user.room)
