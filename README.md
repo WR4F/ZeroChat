@@ -44,39 +44,46 @@ You can share a link with `/roomName` at the end of the URL to have your friends
 
 Wondering [how it's a live chat without javascript](https://justhack.in/stateful-http)?
 
-## Running & Dependencies
+## Setup & Dependencies
 
-This project requires NodeJS, unless you download one of the [releases](https://github.com/rslay/ZeroChat/releases) (Supported only on windows).
+This project requires NodeJS to run, unless you download one of the precompiled binary [releases](https://github.com/rslay/ZeroChat/releases) (Supported only on windows).
 
-### Running ZeroChat on Windows
+**There are three different ways to run ZeroChat, read below.**
 
-Take a look at the [releases](https://github.com/rslay/ZeroChat/releases) for executable binaries if you just want to run the chat server.
+### Setup ZeroChat on Windows
 
-If you want to tweak the program and run the source code on Windows without docker, follow along with the [steps to self host](#self-hosting-without-docker) below!
+Download from the [releases](https://github.com/rslay/ZeroChat/releases) for executable binaries if you just want to run the chat server.
 
-### Self hosting with Docker
+If you want to tweak the program and run the source code on Windows with/without docker, continue below.
 
-1. Configure the environmental variables by doing `cp .env.example .env`
-2. (Optionally) Edit `.env` with the custom values
-3. Run `docker-compose --env-file .env up` after getting the project and config ready
+### Self hosting setup with Docker
+
+Run `docker compose --env-file .env.example up`.
 
 `docker ps` should show you that the service is running!
 
-Stop the service by running `docker-compose down`.
+Stop the service by running `docker compose down`.
 
-### Self Hosting without Docker
+#### Customizing
 
-All you need is `node`, which comes with `npm`!
+Copy `.env.example` to `.env` and use that if you'd like to change things.
 
-**For Linux or Mac**: Run the following to install the wonderful **[n](https://github.com/tj/n)** NodeJS version manager, then install NodeJS v12.0.0:
+Keep in mind that if you change the `PORT`, you should change the `EXPOSE` value in the `Dockerfile` and forwarded port in the `docker-compose.yml`.
+
+### Self Hosting setup without Docker
+
+All you need is `node`, which comes with `npm`.
+
+Run the following to install the wonderful [nvm](https://github.com/nvm-sh/nvm/blob/master/README.md#installing-and-updating) (for windows, [windows-nvm](https://github.com/coreybutler/nvm-windows)) NodeJS version manager.
+
+Then install NodeJS v16.2.0:
 
 ```bash
-curl -L https://git.io/n-install | bash
-n 12.0.0
-npm --version
+nvm install 16.2.0
+nvm use 16.2.0
 ```
 
-**For Windows**: [Download and install NodeJS.org](https://nodejs.org) first
+Finally, follow the steps below to set up and run ZeroChat.
 
 #### 💻 Installation and usage
 
@@ -86,8 +93,8 @@ Summary of the steps to be done:
 git clone https://github.com/rslay/ZeroChat zerochat
 cd zerochat
 npm install
-cp .env.example .env 
-// Change the .env variables if needed
+# Make an .env file and change the config, if needed
+cp .env.example .env
 npm run start
 ```
 
@@ -128,12 +135,9 @@ Check the following places:
 
 ## 🤝 Contributing
 
-Contributions, issues, and feature requests are welcome. After cloning and setting up project locally, you can submit 
-a PR to this repo and it will be deployed once it's accepted.
+Contributions, issues, and feature requests are welcome. After cloning and setting up project locally, you can submit a PR to this repo and it will be deployed once it's accepted.
 
-It’s good to have descriptive commit messages, or PR titles so that other contributors can better understand your
-commit or the PR Created. Read [conventional commits](https://www.conventionalcommits.org/en/v1.0.0-beta.3/) before 
-making the commit message.
+It’s good to have descriptive commit messages, or PR titles so that other contributors can better understand your commit or the PR Created. Read [conventional commits](https://www.conventionalcommits.org/en/v1.0.0-beta.3/) before making the commit message.
 
 ## 📔 How it works
 

@@ -50,7 +50,7 @@ app.use((err: any, req: Request, res: Response, next: Function) => {
 })
 
 // Host address
-const host = Config.HOST_ADDRESS || '0.0.0.0'
+const host = Config.ADDRESS
 
 if (Config.USE_HTTPS === 'true') { // Using HTTPS
 	if (!Config.HTTPS_PRIV_KEY) { throw new Error("Using HTTPS, but missing HTTPS_PRIV_KEY path") }
@@ -65,7 +65,11 @@ if (Config.USE_HTTPS === 'true') { // Using HTTPS
 			console.error(err)
 			process.exit(1)
 		}
-		console.log(`Server listening at https://${host}:${Config.HTTPS_PORT}`)
+		if (host == "0.0.0.0") {
+			console.log(`Server listening at https://localhost:${Config.HTTPS_PORT}`)
+		} else {
+			console.log(`Server listening at https://${host}:${Config.HTTPS_PORT}`)
+		}
 	})
 
 	// Redirect HTTP to HTTPS
@@ -82,7 +86,11 @@ if (Config.USE_HTTPS === 'true') { // Using HTTPS
 			console.error(err)
 			process.exit(1)
 		}
-		console.log(`Server listening at http://${host}:${Config.HTTP_PORT}`)
+		if (host == "0.0.0.0") {
+			console.log(`Server listening at http://localhost:${Config.HTTP_PORT}`)
+		} else {
+			console.log(`Server listening at http://${host}:${Config.HTTP_PORT}`)
+		}
 	})
 }
 module.exports = app

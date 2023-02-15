@@ -1,5 +1,10 @@
 const fs = require('fs')
-const dotenv = require('dotenv').config()
+const dotenv = require('dotenv').config({ path: '.env' })
+
+if (dotenv.error) { // .env missing, using .env.example
+	console.info("INFO: .env file configuration missing, using defaults to listen on all interfaces on port 80");
+	const dotenv_defaults = require('dotenv').config({ path: '.env.example' })
+}
 
 if (process.env.ROOMS && process.env.ROOMS.length == 0) {
 	throw new Error("No rooms set in .env file.");
@@ -39,6 +44,7 @@ let configData = {
 
 	ERRORS: {
 		INVALID_TOKEN: { message: "Invalid Token", error: "401" },
+		DUPLICATE_CONNECTION: { message: "Duplicate Connection", error: "403" },
 		INVALID_REQUEST: { message: "Invalid Request", error: "400" },
 	},
 
@@ -72,7 +78,7 @@ let configData = {
 					})
 
 					if (configData.isValidTheme(configData.DEFAULT_THEME)) {
-						console.log("Themes loaded: " + configData.themes);
+						console.log("Themes loaded: " + configData.themes + "(using theme " + configData.DEFAULT_THEME + " )");
 						resolve(configData.themes)
 					} else {
 						throw new Error("Default theme '" + configData.DEFAULT_THEME + "' does not exist!")

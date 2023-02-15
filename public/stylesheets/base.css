@@ -374,23 +374,23 @@ iframe#chat-frame{
 
 .message .filedownload > span {
 	margin: 0 0 -7px 0;
-    min-width: 0px;
-    position: absolute;
+	min-width: 0px;
+	position: absolute;
 	opacity: 0;
 	font-size: 14px;
 }
 .message .filedownload:target > span {
 	position: fixed;
-    margin-bottom: 0px;
-    color: white;
-    z-index: 1;
-    width: 100%;
-    height: initial;
-    left: 0;
-    bottom: 9px;
-    text-align: center;
+	margin-bottom: 0px;
+	color: white;
+	z-index: 1;
+	width: 100%;
+	height: initial;
+	left: 0;
+	bottom: 9px;
+	text-align: center;
 	opacity: 1;
-    transition: 0.3s ease all;
+	transition: 0.3s ease all;
 }
 
 .message .filedownload > a > img, .message .filedownload video {
@@ -424,15 +424,16 @@ iframe#chat-frame{
 	transform: translate(-50%,-50%);
 	cursor: initial;
 	border-radius: 0px;
-    animation: 0.3s popIn ease 1;
-    /* animation-timing-function: cubic-bezier(0.25,0.1,0.25,1.5); */
+	animation: 0.3s popIn ease 1;
+	/* animation-timing-function: cubic-bezier(0.25,0.1,0.25,1.5); */
 }
 .message .filedownload a.previewClose {
 	pointer-events: none;
+	cursor: unset;
 	display: none;
 	position: fixed;
 	margin: 0;
-	background: rgba(0,0,0,0.85);
+	background: rgba(0,0,0,0.45);
 	transition: 0.2s;
 	width: 100vw;
 	height: 100vh;
@@ -451,7 +452,7 @@ iframe#chat-frame{
 	pointer-events: initial;
 	display: block;
 	opacity: 1;
-	animation: fadeIn 0.3s 1;
+	animation: fadeIn 0.2s 1;
 }
 .message .filedownload:target {
 	z-index: 1;

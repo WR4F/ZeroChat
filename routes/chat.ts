@@ -9,10 +9,11 @@ const Security = require('../utils/security')
 
 // The exact amount of bytes (1024) needed for a browser to take our response
 // seriously and begin rendering the HTML sent so far, immediately
-const WHITESPACE_BITS = " ".repeat(1024)
+const WHITESPACE_BITS = " ".repeat(1024) // For older Firefox versions, needed for them to start rendering
 
-const MAX_MESSAGE_LENGTH = 300 // TODO make some kind of configSetup var
-const MAX_FILE_SIZE = 5242880 // 5 Mb // TODO make some kind of configSetup var
+// TODO make some kind of configSetup var
+const MAX_MESSAGE_LENGTH = 300
+const MAX_FILE_SIZE = 10485760 // 10 Mb // TODO make some kind of configSetup var
 const MAX_HANDLE_LENGTH = 15
 const MAX_PASSCODE_LENGTH = 64
 const MAX_ROOMNAME_LENGTH = 24
@@ -42,10 +43,10 @@ interface ZCRequest extends Request {
 	message: string
 }
 
-// let users:Array<InstanceType<typeof User>> = []
 let users: Array<typeof User> = []
 let router = express.Router()
 
+// FIXME bug where one user has "left" multiple times
 const broadcast = async (user: typeof User | null, message: string, room: string, file: FileUpload | null | undefined = null) => {
 	// A second check before sending. TODO It should not be possible to hit this branch, remove other checks elsewhere?
 	if (message.trim() === '' && !file) {
@@ -518,10 +519,15 @@ router.get(URL_PREFIX + ROUTES.CHAT_MESSAGES, (req: ZCRequest, res: Response, ne
 	// Find user
 	let user = getUserByToken(req.query.token as string)
 	if (!user) { return res.render(VIEWS.ERROR, ERRORS.INVALID_TOKEN) }
+	if (user.frames.chat != null) { return res.render(VIEWS.ERROR, ERRORS.DUPLICATE_CONNECTION) }
 	user.frames.chat = res
+	let keepAliveInterval: any // Function called at an interval defined later during render
 
 	// On disconnect, remove the user entirely
 	req.on("close", () => {
+		if (keepAliveInterval) {
+			clearInterval(keepAliveInterval)
+		}
 		disconnectUser(user)
 	})
 
@@ -542,7 +548,10 @@ router.get(URL_PREFIX + ROUTES.CHAT_MESSAGES, (req: ZCRequest, res: Response, ne
 			},
 			(err: Error, html: string) => {
 				user.frames.chat.write(html)
-				user.frames.chat.write(WHITESPACE_BITS) // Firefox needs extra data sent to render the document properly
+				user.frames.chat.write(WHITESPACE_BITS)
+				keepAliveInterval = setInterval(() => {
+					if (keepAliveInterval) user.frames.chat.write("\0") // null byte sent on an interval to the browser to keep the TCP connection alive
+				}, 10000)
 			})
 
 		broadcast(null, user.handle + " (" + user.tripcode + ") joined /" + user.room + ".", user.room)
