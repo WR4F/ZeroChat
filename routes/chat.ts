@@ -98,10 +98,12 @@ const broadcast = async (user: typeof User | null, message: string, room: string
 		if (iUser.frames.chat) {
 			let notify = undefined
 
-			if (iUser.notifications == 'mentions') {
-				notify = message.includes(iUser.handle) ? true : undefined
-			} else if (iUser.notifications == 'always'){
-				notify = true
+			if (iUser.handle !== postHandle) {
+				if (messageType !== 'system' && iUser.notifications == 'mentions') {
+					notify = message.includes(iUser.handle) ? true : undefined
+				} else if (iUser.notifications == 'always'){
+					notify = true
+				}
 			}
 			iUser.frames.chat.render(VIEWS.NEW_MESSAGE,
 				{
