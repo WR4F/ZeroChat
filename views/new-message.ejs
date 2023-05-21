@@ -31,4 +31,9 @@
 			<span class="message-text"><%= message %></span>
 		<% } %>
 	</div>
+	<% if (typeof notifications != "undefined") { %>
+	<audio class="sound" autoplay src="/sound.mp3">
+		<source src="/sound.mp3" type="audio/mpeg">
+	</audio>
+	<% } %>
 </div>

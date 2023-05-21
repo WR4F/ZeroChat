@@ -12,6 +12,8 @@ if (process.env.ROOMS && process.env.ROOMS.length == 0) {
 
 if (process.env.SECRET_SALT == "" || process.env.SECRET_SALT == null) {
 	console.info("INFO: You are not using a salt for passcode hashing, a randomly generated salt will be used until you set a SECRET_SALT in the .env file and restart ZeroChat.");
+} else if (process.env.SECRET_SALT == "dummy text") {
+	console.info("INFO: For secure tripcodes to identify users, you should set a SECRET_SALT environment variable.");
 }
 const ROOMS: String[] = (process.env.ROOMS ? process.env.ROOMS.split(",") : [])
 if (ROOMS.length == 0) {
@@ -20,6 +22,7 @@ if (ROOMS.length == 0) {
 
 let configData = {
 	DEFAULT_THEME: process.env.DEFAULT_THEME || 'light',
+	DEFAULT_NOTIFICATIONS: process.env.DEFAULT_NOTIFICATIONS || 'off',
 	DEFAULT_ROOM: (ROOMS && ROOMS[0] ? ROOMS[0] : null),
 	ROOMS: ROOMS,
 
@@ -78,7 +81,7 @@ let configData = {
 					})
 
 					if (configData.isValidTheme(configData.DEFAULT_THEME)) {
-						console.log("Themes loaded: " + configData.themes + "(using theme " + configData.DEFAULT_THEME + " )");
+						console.log("Themes loaded: " + configData.themes + " (using '" + configData.DEFAULT_THEME + "')");
 						resolve(configData.themes)
 					} else {
 						throw new Error("Default theme '" + configData.DEFAULT_THEME + "' does not exist!")

@@ -23,6 +23,7 @@ module.exports = class User {
 	token: String
 	tripcode: String
 	theme: String
+	notifications: String
 	inlineView: Boolean | undefined
 	room: Object
 	frames: ChatStreams
@@ -36,11 +37,12 @@ module.exports = class User {
 		""
 	]
 
-	constructor(handle: String, pass: String, chatSession: Response, theme: String, inlineView: Boolean, room: String) {
+	constructor(handle: String, pass: String, chatSession: Response, theme: String, notifications: String, inlineView: Boolean, room: String) {
 		this.handle = handle // screen name
 		this.token = Security.dispenseToken() // session token
 		this.tripcode = Security.genTripcode(pass) // identifying tripcode
 		this.theme = theme // preferred theme
+		this.notifications = notifications // notification preferences
 		this.inlineView = (inlineView ? true : undefined)
 		this.room = room // the room the user is in
 		this.frames = { "chatroom": chatSession, "post": null, "upload": null, "chat": null, "settings": null } // response object

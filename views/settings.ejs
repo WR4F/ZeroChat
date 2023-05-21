@@ -9,7 +9,7 @@
 			<div id="settings_options">
 				<input type="hidden" name="setSettings" value="true">
 
-				<label>Theme</label>
+				<label>Theme (active: <%= theme %>)</label>
 
 				<select name="theme" id="themepicker">
 					<% locals.config.themes.forEach( curTheme => { %>
@@ -17,6 +17,13 @@
 						name="theme" value="<%= curTheme %>">
 						<%= curTheme %>
 					</option>
+					<% }) %>
+				</select>
+
+				<label>Notifications</label>
+				<select name="notifications" id="notificationspicker">
+					<% [['off','Off'],['mentions','Mentions only'],['always','Always']].forEach(notif => { %>
+					<option <% if (notifications == notif[0]) { %> selected <% } %> name="notifications" value="<%= notif[0] %>"><%= notif[1] %></option>
 					<% }) %>
 				</select>
 
