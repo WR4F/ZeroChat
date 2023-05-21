@@ -3,9 +3,8 @@ const express = require("express")
 const fileUploader = require('express-fileupload');
 const User = require("../classes/User")
 const ConfigSetup = require('../utils/configSetup')
-const { DEFAULT_THEME, DEFAULT_ROOM, ROOMS, DEFAULT_INLINE_PREVIEW, ROUTES, VIEWS, ERRORS } = require('../utils/configSetup')
+const { DEFAULT_THEME, DEFAULT_NOTIFICATIONS, DEFAULT_ROOM, ROOMS, DEFAULT_INLINE_PREVIEW, ROUTES, VIEWS, ERRORS } = require('../utils/configSetup')
 const Security = require('../utils/security')
-// TODO gotta clean up unused things
 
 // The exact amount of bytes (1024) needed for a browser to take our response
 // seriously and begin rendering the HTML sent so far, immediately
@@ -24,7 +23,11 @@ const PATHS = Object.values(ROUTES) // Array containing only the values of ROUTE
 const BLACKLISTED_ROOM_NAMES = [
 	'robots.txt',
 	'favicon.ico',
-	'public'
+	'sound.mp3',
+	'public',
+	'stylesheets',
+	'themes',
+	'images'
 ]
 
 type FileUpload = {
@@ -91,16 +94,27 @@ const broadcast = async (user: typeof User | null, message: string, room: string
 			}
 		}
 
+		// Render a new message
 		if (iUser.frames.chat) {
+			let notify = undefined
+
+			if (iUser.handle !== postHandle) {
+				if (messageType !== 'system' && iUser.notifications == 'mentions') {
+					notify = message.includes(iUser.handle) ? true : undefined
+				} else if (iUser.notifications == 'always'){
+					notify = true
+				}
+			}
 			iUser.frames.chat.render(VIEWS.NEW_MESSAGE,
 				{
 					handle: postHandle,
 					tripcode: postTrip,
 					messageType: messageType,
 					message: message,
-					inlineView: iUser.inlineView,
+					notifications: notify,
+					inlineView: notify,
 					timestamp: new Date().toUTCString(),
-					file: file
+					file: file,
 				},
 				(err: Error, html: string) => {
 					iUser.frames.chat.write(html)
@@ -234,10 +248,13 @@ router.post("*", async (req: ZCRequest, res: Response, next: Function) => {
 		})
 	}
 
+	// Handle settings and set defaults whenever the user joins or updates settings
 	if (req.body.setSettings === true || req.body.join === true) {
 		req.body.inlineView = (req.body.inlineView ? true : undefined)
 		req.body.theme = req.body.theme.trim()
-		// Check if invalid theme
+		req.body.notifications = req.body.notifications || DEFAULT_NOTIFICATIONS
+		
+		// Show error if theme is unknown
 		if (!ConfigSetup.isValidTheme(req.body.theme)) {
 			return res.render(VIEWS.LAYOUT, {
 				page: VIEWS.ERROR_MESSAGE,
@@ -280,7 +297,8 @@ router.post("*", async (req: ZCRequest, res: Response, next: Function) => {
 				handleMaxlen: MAX_HANDLE_LENGTH,
 				passMaxlen: MAX_PASSCODE_LENGTH,
 				roomNameMaxlen: MAX_ROOMNAME_LENGTH,
-				theme: req.body.theme || ConfigSetup.DEFAULT_THEME,
+				theme: req.body.theme || DEFAULT_THEME,
+				notifications: req.body.notifications || DEFAULT_NOTIFICATIONS,
 				inlineView: req.body.inlineView,
 				setSettings: req.body.setSettings,
 				url: sanitizeRoomName(req.url),
@@ -331,7 +349,7 @@ router.get(MAIN_LOGIN_REGEX, (req: ZCRequest, res: Response, next: Function) => 
 		return res.render(VIEWS.LAYOUT, {
 			page: VIEWS.ERROR_MESSAGE,
 			url: "_hidden",
-			error: "Invalid room " + req.url,
+			error: "Disallowed room name " + req.url,
 			redirect: URL_PREFIX
 		})
 	}
@@ -341,8 +359,9 @@ router.get(MAIN_LOGIN_REGEX, (req: ZCRequest, res: Response, next: Function) => 
 		handleMaxlen: MAX_HANDLE_LENGTH,
 		passMaxlen: MAX_PASSCODE_LENGTH,
 		roomNameMaxlen: MAX_ROOMNAME_LENGTH,
-		theme: req.body.theme || ConfigSetup.DEFAULT_THEME,
-		inlineView: (req.body.inlineView === undefined ? ConfigSetup.DEFAULT_INLINE_PREVIEW : req.body.inlineView),
+		theme: req.body.theme || DEFAULT_THEME,
+		notifications: req.body.notifications || DEFAULT_NOTIFICATIONS,
+		inlineView: (req.body.inlineView === undefined ? DEFAULT_INLINE_PREVIEW : req.body.inlineView),
 		setSettings: req.body.setSettings,
 		url: req.url,
 		rooms: ROOMS,
@@ -366,8 +385,9 @@ router.get(URL_PREFIX + "_*", (req: ZCRequest, res: Response, next: Function) =>
 			handleMaxlen: MAX_HANDLE_LENGTH,
 			passMaxlen: MAX_PASSCODE_LENGTH,
 			roomNameMaxlen: MAX_ROOMNAME_LENGTH,
-			theme: req.body.theme || ConfigSetup.DEFAULT_THEME,
-			inlineView: (req.body.inlineView === undefined ? ConfigSetup.DEFAULT_INLINE_PREVIEW : req.body.inlineView),
+			theme: req.body.theme || DEFAULT_THEME,
+			notifications: req.body.notifications || DEFAULT_NOTIFICATIONS,
+			inlineView: (req.body.inlineView === undefined ? DEFAULT_INLINE_PREVIEW : req.body.inlineView),
 			setSettings: req.body.setSettings,
 			url: sanitizeRoomName(req.url),
 			rooms: ROOMS,
@@ -425,7 +445,7 @@ router.post(URL_PREFIX + ROUTES.MAIN, (req: ZCRequest, res: Response, next: Func
 	if (req.body.handle === undefined || req.body.passcode === undefined) {
 		return res.render(VIEWS.ERROR, ERRORS.INVALID_REQUEST, () => res.end)
 	}
-	user = new User(req.body.handle, req.body.passcode, res, req.body.theme, req.body.inlineView, req.body.room)
+	user = new User(req.body.handle, req.body.passcode, res, req.body.theme, req.body.notifications, req.body.inlineView, req.body.room)
 	users.push(user)
 
 	// Wait until the tripcode is done generating
@@ -464,9 +484,10 @@ router.get(URL_PREFIX + ROUTES.SETTINGS, (req: ZCRequest, res: Response, next: F
 			page: VIEWS.SETTINGS,
 			user: user,
 			theme: user.theme,
+			notifications: user.notifications,
 			inlineView: user.inlineView,
 			setSettings: req.body.setSettings,
-			snapbottom: true,
+			snapbottom: true, // ???
 			// redirect: URL_PREFIX + ROUTES.SETTINGS + "?token=" + req.query.token,
 		},
 		(err: Error, html: string) => { return user.frames.settings.end(html) }
@@ -488,16 +509,18 @@ router.post(URL_PREFIX + ROUTES.SETTINGS, (req: ZCRequest, res: Response, next: 
 		})
 	}
 
-	if (user.theme !== req.body.theme || user.inlineView !== req.body.inlineView) {
+	if (user.theme !== req.body.theme || user.inlineView !== req.body.inlineView || user.notifications !== req.body.notifications) {
 		try {
 			user.setTheme(req.body.theme)
 			user.inlineView = req.body.inlineView
+			user.notifications = req.body.notifications
 			user.frames.settings.render(
 				VIEWS.LAYOUT,
 				{
 					page: VIEWS.SETTINGS,
 					user: user,
 					theme: user.theme,
+					notifications: user.notifications,
 					inlineView: user.inlineView,
 					setSettings: req.body.setSettings,
 					snapbottom: true,

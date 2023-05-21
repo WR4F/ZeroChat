@@ -20,6 +20,13 @@
 					<% }) %>
 				</select>
 
+				<label>Notifications</label>
+				<select name="notifications" id="notificationspicker">
+					<% [['off','Off'],['mentions','Mentions only'],['always','Always']].forEach(notif => { %>
+					<option <% if (notifications == notif[0]) { %> selected <% } %> name="notifications" value="<%= notif[0] %>"><%= notif[1] %></option>
+					<% }) %>
+				</select>
+
 				<label>File Previews</label>
 				<input type="checkbox" name="inlineView" id="inlineView"
 					<% if (typeof inlineView != "undefined" && inlineView) { %> checked <% } %> />
