@@ -14,6 +14,9 @@ let chatCrypto = {
 	// Generate unique hash (tripcode) from password
 	genTripcode: (password: String) => {
 		return new Promise(function (resolve, reject) {
+			if (password == null || password == "") {
+				return resolve("Anon")
+			}
 			cryptography.pbkdf2(
 				password,
 				chatCrypto.SALT,
@@ -24,7 +27,7 @@ let chatCrypto = {
 					if (error) {
 						reject(error)
 					} else {
-						resolve(Buffer.from(hash, 'binary').toString("base64").substr(0, chatCrypto.TRIPCODE_LENGTH))
+						resolve(Buffer.from(hash, 'binary').toString("base64").substring(0, chatCrypto.TRIPCODE_LENGTH))
 					}
 				},
 			)

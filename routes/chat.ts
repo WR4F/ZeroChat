@@ -12,7 +12,8 @@ const WHITESPACE_BITS = " ".repeat(1024) // For older Firefox versions, needed f
 
 // TODO make some kind of configSetup var
 const MAX_MESSAGE_LENGTH = 300
-const MAX_FILE_SIZE = 10485760 // 10 Mb // TODO make some kind of configSetup var
+const MAX_FILE_SIZE = 209715200 // 200 Mb // TODO make some kind of configSetup var
+const ONE_MB = 1048576
 const MAX_HANDLE_LENGTH = 15
 const MAX_PASSCODE_LENGTH = 64
 const MAX_ROOMNAME_LENGTH = 24
@@ -73,7 +74,7 @@ const broadcast = async (user: typeof User | null, message: string, room: string
 	}
 
 	for (const iUser of users) {
-		if (iUser.room !== room) continue
+		if (iUser.room !== room) continue // This user is in another room
 
 		let postHandle = ""
 		let postTrip = ""
@@ -81,17 +82,15 @@ const broadcast = async (user: typeof User | null, message: string, room: string
 
 		if (user === null) {
 			messageType = "system" // If 'user' is null, it's a system message
+		} else if (user && user.token == iUser.token) {
+			// User receiving own message
+			postHandle = iUser.handle
+			postTrip = iUser.tripcode
+			messageType = "self"
 		} else {
-			if (user && user.token == iUser.token) {
-				// User receiving own message
-				postHandle = iUser.handle
-				postTrip = iUser.tripcode
-				messageType = "self"
-			} else {
-				// Other user receiving this message
-				postHandle = user.handle
-				postTrip = user.tripcode
-			}
+			// Other user receiving this message
+			postHandle = user.handle
+			postTrip = user.tripcode
 		}
 
 		// Render a new message
@@ -112,7 +111,7 @@ const broadcast = async (user: typeof User | null, message: string, room: string
 					messageType: messageType,
 					message: message,
 					notifications: notify,
-					inlineView: notify,
+					inlineView: iUser.inlineView,
 					timestamp: new Date().toUTCString(),
 					file: file,
 				},
@@ -169,9 +168,9 @@ let getUserByHandle = (handle: string, room: string) => {
 // Clean up request input
 const sanitizeRequest = (req: ZCRequest) => {
 	// Login sanitization
-	if (req.body.handle && req.body.passcode) {
+	if (req.body.handle) {
 		req.body.handle = req.body.handle.trim()
-		req.body.passcode = req.body.passcode.trim()
+		req.body.passcode = req.body.passcode?.trim() ?? null
 		req.body.room = sanitizeRoomName(req.body.room)
 		if (req.body.room == "") req.body.room = sanitizeRoomName(DEFAULT_ROOM)
 	}
@@ -207,14 +206,14 @@ const filesLimitHandler = (req: ZCRequest, res: Response, next: Function) => {
 		return res.render(VIEWS.LAYOUT, {
 			page: VIEWS.ERROR_MESSAGE,
 			url: "_hidden",
-			error: "Cannot upload files over " + MAX_FILE_SIZE / 1048576 + " MBs.",
+			error: "Cannot upload files over " + MAX_FILE_SIZE / ONE_MB + " MBs.",
 			user: user,
 			redirect: URL_PREFIX + ROUTES.WRITE_MESSAGE + "?token=" + req.body.token + (req.body.message ? "&msg=" + req.body.message : "")
 		})
 	}
 }
 
-router.use(fileUploader({ useTempFiles: false, limits: { files: 1, fileSize: 5242880 }, limitHandler: filesLimitHandler, }));
+router.use(fileUploader({ useTempFiles: false, limits: { files: 1, fileSize: MAX_FILE_SIZE }, limitHandler: filesLimitHandler, }));
 
 // POST REQUEST VALIDATION
 // Uses "handle", "passcode", "room", "theme", "url"
@@ -305,8 +304,7 @@ router.post("*", async (req: ZCRequest, res: Response, next: Function) => {
 				rooms: ROOMS,
 				defaultRoom: DEFAULT_ROOM
 			})
-		} else if (req.body.handle === ""
-			|| req.body.passcode === "") {
+		} else if (req.body.handle === "") {
 			// FIXME Shouldn't this check if 'isPosting' is true? Or is this joining?
 			// User is missing a required field
 			return res.render(VIEWS.LAYOUT, {
@@ -349,7 +347,7 @@ router.get(MAIN_LOGIN_REGEX, (req: ZCRequest, res: Response, next: Function) => 
 		return res.render(VIEWS.LAYOUT, {
 			page: VIEWS.ERROR_MESSAGE,
 			url: "_hidden",
-			error: "Disallowed room name " + req.url,
+			error: "Reserved keyword not allowed in room name " + req.url,
 			redirect: URL_PREFIX
 		})
 	}
@@ -459,8 +457,7 @@ router.post(URL_PREFIX + ROUTES.MAIN, (req: ZCRequest, res: Response, next: Func
 				url: user.room,
 				writemsg: URL_PREFIX + ROUTES.WRITE_MESSAGE,
 				chatmsgs: URL_PREFIX + ROUTES.CHAT_MESSAGES,
-				settingsPanel: URL_PREFIX + ROUTES.SETTINGS,
-				snapbottom: true
+				settingsPanel: URL_PREFIX + ROUTES.SETTINGS
 			}
 		)
 	})
@@ -486,8 +483,7 @@ router.get(URL_PREFIX + ROUTES.SETTINGS, (req: ZCRequest, res: Response, next: F
 			theme: user.theme,
 			notifications: user.notifications,
 			inlineView: user.inlineView,
-			setSettings: req.body.setSettings,
-			snapbottom: true, // ???
+			setSettings: req.body.setSettings
 			// redirect: URL_PREFIX + ROUTES.SETTINGS + "?token=" + req.query.token,
 		},
 		(err: Error, html: string) => { return user.frames.settings.end(html) }
@@ -523,7 +519,6 @@ router.post(URL_PREFIX + ROUTES.SETTINGS, (req: ZCRequest, res: Response, next: 
 					notifications: user.notifications,
 					inlineView: user.inlineView,
 					setSettings: req.body.setSettings,
-					snapbottom: true,
 					// setSettings: true,
 					redirect: URL_PREFIX + ROUTES.SETTINGS + "?token=" + req.query.token,
 				},

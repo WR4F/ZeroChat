@@ -1,5 +1,4 @@
 <iframe allowtransparency="true" tabindex="1" id="post-frame" src="<%= writemsg %>?token=<%= user.token %>" autofocus></iframe>
 
 <iframe allowtransparency="true" tabindex="-1" id="chat-frame" src="<%= chatmsgs %>?token=<%= user.token %>"></iframe>
-<iframe allowtransparency="true" tabindex="-1" id="settings-frame" <% if (typeof snapbottom != "undefined" && snapbottom) { %>
-    class="snapbottom" <% } %> src="<%= settingsPanel %>?token=<%= user.token %>"></iframe>
+<iframe allowtransparency="true" tabindex="-1" id="settings-frame" src="<%= settingsPanel %>?token=<%= user.token %>"></iframe>

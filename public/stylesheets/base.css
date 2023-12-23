@@ -51,7 +51,7 @@ input[type=checkbox] + .forCheckbox::after {
 	content: " ";
 }
 input[type=checkbox]:checked + .forCheckbox::after {
-	content: "🗸";
+	content: "✓";
 }
 input[type=submit]{
 	cursor: pointer;
@@ -143,20 +143,33 @@ code {
 
 /* Settings */
 
-#settings{
+iframe#settings-frame {
+	z-index: 2;
+	position: fixed;
+	bottom: 0;
+	height: 305px;
+	width: 305px;
+}
+#settings {
 	position: absolute;
-	top: 0px;
-	left: 0px;
+	text-align: right;
 	padding: 0px 18px;
 	z-index: 1;
-	text-align: right;
+	border-top-width: 2px;
+	border-right-width: 2px;
+	border-bottom-right-radius: initial;
+	border-top-right-radius: 3px;
+	top: initial;
+	right: inherit;
+	left: 0;
+	bottom: 0;
+	border: 0;
 	background: var(--settings);
-	border: 2px solid var(--border);
-	border-left: 0;
-	border-top: 0;
-	border-bottom-right-radius: 3px;
+	border-top: 2px solid var(--border);
+	border-right: 2px solid var(--border);
 	line-height: initial;
 }
+
 #settings_options, #checkshow{
 	display:none;
 }
@@ -261,6 +274,7 @@ code {
 	gap: 30px;
 	grid-auto-flow: column;
 	grid-auto-columns: 33% 33% 33%;
+	border-top: 1px solid #00000020;
 }
 .corners > :first-child {
 	text-decoration: none;
@@ -285,14 +299,6 @@ iframe#post-frame{
 	height: 60px;
 	width: 100%;
 	margin: 0 auto;
-}
-iframe#settings-frame {
-	z-index: 2;
-	position: fixed;
-	left: 0;
-	top: 0;
-	height: 300px;
-	width: 265px;
 }
 #post{
 	display: flex;
@@ -562,32 +568,5 @@ iframe#chat-frame{
 	.message .filedownload > :nth-child(2) {
 		max-width: 100%;
 		max-height: 100%;
-	}
-}
-
-@media only screen and (max-width: 1670px) {
-	#settings-frame.snapbottom {
-		left: 0;
-		bottom: 0;
-		top: inherit;
-		width: 245px;
-		height: 253px;
-	}
-}
-
-@media only screen and (max-width: 250px) {
-	#settings.snapbottom {
-		padding: 0px 10px;
-		border-top-width: 2px;
-		border-right-width: 2px;
-		border-bottom-right-radius: initial;
-		border-top-right-radius: 3px;
-		top: inherit;
-		right: inherit;
-		left: 0;
-		bottom: 0;
-		border: 0;
-		border-top: 2px solid var(--border);
-		border-right: 2px solid var(--border);
 	}
 }

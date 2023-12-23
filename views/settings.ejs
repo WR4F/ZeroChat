@@ -3,7 +3,7 @@
 	<% } else { %>
 	<form action="" method="POST">
 		<% } %>
-		<div id="settings" <% if (typeof snapbottom != "undefined" && snapbottom) { %> class="snapbottom" <% } %>>
+		<div id="settings">
 			<input type="checkbox" id="checkshow">
 			<label for="checkshow"></label>
 			<div id="settings_options">
@@ -43,11 +43,3 @@
 
 		</div>
 	</form>
-	<% if (typeof snapbottom != "undefined" && snapbottom) { %>
-	<style>
-		html,
-		body {
-			background-color: transparent;
-		}
-	</style>
-	<% } %>
