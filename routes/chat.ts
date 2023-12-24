@@ -12,7 +12,7 @@ const WHITESPACE_BITS = " ".repeat(1024) // For older Firefox versions, needed f
 
 // TODO make some kind of configSetup var
 const MAX_MESSAGE_LENGTH = 300
-const MAX_FILE_SIZE = 209715200 // 200 Mb // TODO make some kind of configSetup var
+const MAX_FILE_SIZE = ConfigSetup.MAX_FILE_SIZE // 50 Mb // TODO make some kind of configSetup var
 const ONE_MB = 1048576
 const MAX_HANDLE_LENGTH = 15
 const MAX_PASSCODE_LENGTH = 64

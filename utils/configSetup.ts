@@ -25,6 +25,7 @@ let configData = {
 	DEFAULT_NOTIFICATIONS: process.env.DEFAULT_NOTIFICATIONS || 'off',
 	DEFAULT_ROOM: (ROOMS && ROOMS[0] ? ROOMS[0] : null),
 	ROOMS: ROOMS,
+	MAX_FILE_SIZE: process.env.MAX_FILE_SIZE || 52428800,
 
 	ROUTES: {
 		MAIN: '',
