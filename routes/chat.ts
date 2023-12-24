@@ -483,7 +483,8 @@ router.get(URL_PREFIX + ROUTES.SETTINGS, (req: ZCRequest, res: Response, next: F
 			theme: user.theme,
 			notifications: user.notifications,
 			inlineView: user.inlineView,
-			setSettings: req.body.setSettings
+			setSettings: req.body.setSettings,
+			transparentSettings: true
 			// redirect: URL_PREFIX + ROUTES.SETTINGS + "?token=" + req.query.token,
 		},
 		(err: Error, html: string) => { return user.frames.settings.end(html) }
