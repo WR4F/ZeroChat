@@ -75,7 +75,7 @@ if (Config.USE_HTTPS === 'true') { // Using HTTPS
 	// Redirect HTTP to HTTPS
 	const httpRedirect = express();
 	httpRedirect.all('*', (req: Request, res: Response) => {
-		res.redirect(300, `https://${req.hostname}:${Config.HTTPS_PORT}${req.url}`)
+		res.redirect(`https://${req.hostname}:${Config.HTTPS_PORT}${req.url}`)
 	});
 	const httpServer = http.createServer(httpRedirect);
 	httpServer.listen(Config.HTTP_PORT, () => console.log(`HTTP server listening and redirecting on port ${Config.HTTP_PORT}`));
