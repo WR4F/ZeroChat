@@ -216,7 +216,7 @@ iframe#settings-frame {
 
 #logo{
 	z-index: 1;
-	position: fixed;
+	position: absolute;
 	bottom: 0.7rem;
 	left: 1rem;
 	display: grid;
