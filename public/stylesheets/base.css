@@ -147,26 +147,17 @@ iframe#settings-frame {
 	z-index: 2;
 	position: fixed;
 	bottom: 0;
-	height: 305px;
-	width: 315px;
+	height: 310px;
+	width: 185px;
+	right: 0;
 }
 #settings {
 	position: absolute;
 	text-align: right;
-	padding: 0px 18px;
 	z-index: 1;
-	border-top-width: 2px;
-	border-right-width: 2px;
-	border-bottom-right-radius: initial;
-	border-top-right-radius: 3px;
-	top: initial;
-	right: inherit;
-	left: 0;
+	right: 0;
 	bottom: 0;
 	border: 0;
-	background: var(--settings);
-	border-top: 2px solid var(--border);
-	border-right: 2px solid var(--border);
 	line-height: initial;
 }
 
@@ -178,16 +169,8 @@ iframe#settings-frame {
 	cursor: pointer;
 }
 #checkshow + label{
-	position: initial;
-	top: auto;
-	right: auto;
-	left: auto;
-	padding: 0;
-	background-color: transparent;
-	width: initial;
-	text-align: center;
+	margin-right: 25px;
 	font-size: 50px;
-	line-height: initial;
 }
 #checkshow + label:before {
 	content:" ";
@@ -208,14 +191,19 @@ iframe#settings-frame {
 #checkshow:checked + label:after {
 	content:"Close";
 	color: var(--close);
+	font-size: 16px;
 }
 
 #checkshow:checked + label + #settings_options {
 	display: grid;
-	padding: 10px 0;
-	grid-gap: 20px;
-	grid-template-columns: 100px auto;
+	padding: 11px 8px;
+	grid-gap: 5px;
+	grid-template-columns: 100px 1fr;
 	align-items: center;
+	background: var(--settings);
+	border-top: 2px solid var(--border);
+	border-left: 2px solid var(--border);
+	border-top-left-radius: 3px;
 }
 
 #settings-save {
@@ -230,7 +218,7 @@ iframe#settings-frame {
 	z-index: 1;
 	position: fixed;
 	bottom: 0.7rem;
-	right: 1rem;
+	left: 1rem;
 	display: grid;
 	justify-content: center;
 	align-items: center;
@@ -533,16 +521,23 @@ iframe#chat-frame{
 	.chat{
 		font-size: 14px;
 	}
-	input[type="file"]{
-		width: auto;
+	input[type=file]{
+		height: 24px;
 		padding: 7px 0 7px 5px;
+		width: 100%;
+        text-overflow: unset;
+	}
+	@supports (font: -apple-system-body){
+		input[type=file]{
+			line-height: 58px;
+		}
 	}
 	input[type=file]::file-selector-button, input[type=file]::-webkit-file-upload-button {
 		display: none;
 	}
 	#uploadsubmit {
 		display: flex;
-		width: 130px;
+		width: 240px;
 	}
 	@-moz-document url-prefix() { /* Firefox doesn't show an arrow (nor the list by default) */
 		#uploadsubmit {
