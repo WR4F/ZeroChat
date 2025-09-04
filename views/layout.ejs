@@ -21,9 +21,9 @@
 
 <body>
 	<% if (typeof url != "undefined" && !url.startsWith("_")) { %>
-	<a tabindex="-1" href="/<%= url %>" title="URL" id="logo">
+	<span tabindex="-1" href="/<%= url %>" title="URL" id="logo">
 		<img src="/images/z_black.png" alt="ZeroChat" title="ZeroChat">
 		<span>/<%= url %></span>
-	</a>
+	</span>
 	<% } %>
 	<%- include(page) %>
