@@ -1,32 +1,31 @@
 <h1 align="center">
-ZeroChat 
+ZeroChat
 </h1>
 
 <p align="center">
 
-[![Build status](https://ci.appveyor.com/api/projects/status/v86gyvgx0dnuhc75?svg=true&v=1)](https://ci.appveyor.com/project/rslay/zerochat)
-[![Maintainability](https://api.codeclimate.com/v1/badges/84bdf069784f80804e43/maintainability)](https://codeclimate.com/github/rslay/ZeroChat/maintainability) 
-[![Releases](https://badgen.net/github/release/rslay/ZeroChat?v=1)](https://github.com/rslay/ZeroChat/releases)
+<!-- [![Maintainability](https://api.codeclimate.com/v1/badges/84bdf069784f80804e43/maintainability)](https://codeclimate.com/github/WR4F/ZeroChat/maintainability)  -->
+<!-- [![Releases](https://badgen.net/github/release/WR4F/ZeroChat?v=1)](https://github.com/WR4F/ZeroChat/releases) -->
 
 </p>
 
 <h3 align="center">
-  <a href="https://github.com/rslay/ZeroChat/issues/new">Report a bug</a>
+  <a href="https://github.com/WR4F/ZeroChat/issues/new">Report a bug</a>
   <span> · </span> 
-  <a href="https://github.com/rslay/ZeroChat/pulls/new">Create a PR for contributions</a>
+  <a href="https://github.com/WR4F/ZeroChat/pulls/new">Create a PR for contributions</a>
   <span> · </span> 
-  <a href="https://github.com/rslay/ZeroChat/discussions">Discussions</a>
+  <a href="https://github.com/WR4F/ZeroChat/discussions">Discussions</a>
 </h3>
 
 A live web chat. No client-side javascript, cookies, accounts, or `<meta http-equiv="refresh">` tags.
 
 Instead, your browser never finishes loading the whole page, and downloads messages as they are posted by others.
 
-Authentification is done with a password/tripcode system using PBKDF2 hashes.
+Authentication is done with a passcode/tripcode system using PBKDF2 hashes.
 
 ## Try it by visiting [chat.justhack.in](https://chat.justhack.in)
 
-<a href="https://chat.justhack.in"><img src="https://raw.githubusercontent.com/rslay/ZeroChat/master/image2.png" title="Preview of chat login page"/></a>
+<a href="https://chat.justhack.in"><img src="https://raw.githubusercontent.com/WR4F/ZeroChat/master/public/images/preview.png" title="Preview of chat login page"/></a>
 
 **It's easy to self-host, and simple to use.** Developed with a security-first mentality.
 
@@ -46,13 +45,13 @@ Wondering [how it's a live chat without javascript](https://justhack.in/stateful
 
 ## Setup & Dependencies
 
-This project requires NodeJS to run, unless you download one of the precompiled binary [releases](https://github.com/rslay/ZeroChat/releases) (Supported only on windows).
+This project requires NodeJS to run, unless you download one of the precompiled binary [releases](https://github.com/WR4F/ZeroChat/releases) (Supported only on windows).
 
 **There are three different ways to run ZeroChat, read below.**
 
 ### Setup ZeroChat on Windows
 
-Download from the [releases](https://github.com/rslay/ZeroChat/releases) for executable binaries if you just want to run the chat server.
+Download from the [releases](https://github.com/WR4F/ZeroChat/releases) for executable binaries if you just want to run the chat server.
 
 If you want to tweak the program and run the source code on Windows with/without docker, continue below.
 
@@ -90,9 +89,9 @@ Finally, follow the steps below to set up and run ZeroChat.
 Summary of the steps to be done:
 
 ```sh
-git clone https://github.com/rslay/ZeroChat zerochat
+git clone https://github.com/WR4F/ZeroChat zerochat
 cd zerochat
-npm install
+npm install # Check .nvmrc for node version to use
 # Make an .env file and change the config, if needed
 cp .env.example .env
 npm run start
@@ -100,7 +99,7 @@ npm run start
 
 Explanation:
 
-- Download the repo to your machine: **`git clone https://github.com/rslay/ZeroChat zerochat`**
+- Download the repo to your machine: **`git clone https://github.com/WR4F/ZeroChat zerochat`**
   - Enter the new directory with **`cd zerochat`**
 - Install the dependencies for the project using **`npm install` or `yarn install`**
 - Configure the environmental variables by renaming the `.env.example` file to `.env`, e.g. for defaults: **`cp .env.example .env`**
@@ -108,6 +107,10 @@ Explanation:
 - Run the server using **`npm run start`**
 
 ## ⚠ Common Issues
+
+### Incompatible Node Version
+
+Make sure to have installed the version present in the `.nvmrc`, if you have NVM (node version manager) installed you can simply do `nvm install` and then `nvm use` and proceed with running `npm start`.
 
 ### Nginx Issues
 
@@ -126,20 +129,20 @@ server {
 ```
 
 
-## 🔮 Upcoming features
+## Upcoming features
 
 Check the following places:
-- [Issue Tracker](https://github.com/rslay/ZeroChat/issues)
-- [Pull requests](https://github.com/rslay/ZeroChat/pulls)
-- [Discussions](https://github.com/rslay/ZeroChat/discussions)
+- [Issue Tracker](https://github.com/WR4F/ZeroChat/issues)
+- [Pull requests](https://github.com/WR4F/ZeroChat/pulls)
+- [Discussions](https://github.com/WR4F/ZeroChat/discussions)
 
-## 🤝 Contributing
+## Contributing
 
 Contributions, issues, and feature requests are welcome. After cloning and setting up project locally, you can submit a PR to this repo and it will be deployed once it's accepted.
 
 It’s good to have descriptive commit messages, or PR titles so that other contributors can better understand your commit or the PR Created. Read [conventional commits](https://www.conventionalcommits.org/en/v1.0.0-beta.3/) before making the commit message.
 
-## 📔 How it works
+## How it works
 
 Here is the [article that explains how the chat is live without javascript](https://justhack.in/stateful-http)!
 

@@ -50,7 +50,44 @@ interface ZCRequest extends Request {
 let users: Array<typeof User> = []
 let router = express.Router()
 
-// FIXME bug where one user has "left" multiple times
+const wrapUrlsWithAnchorTags = (inputString: string) => {
+	const urlPattern = /(https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,64}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*))\.?/ig;
+
+	const modifiedString = inputString.replace(urlPattern, (url) => {
+		if (url.endsWith('.')) {
+			url = url.substring(0, url.length - 1)
+			return `<a target="_blank" href="${url}">${url}</a>.`;
+		} else {
+			return `<a target="_blank" href="${url}">${url}</a>`;
+		}
+	});
+	return modifiedString;
+}
+
+function escapeMarkup(dangerousInput: string) {
+	const dangerousString: string = String(dangerousInput);
+	const matchHtmlRegExp: any = /["'&<>]/;
+	const match: any = matchHtmlRegExp.exec(dangerousString);
+	if (!match) {
+		return dangerousInput;
+	}
+
+	const encodedSymbolMap: any = {
+		'"': '&quot;',
+		'\'': '&#39;',
+		'&': '&amp;',
+		'<': '&lt;',
+		'>': '&gt;'
+	};
+
+	const dangerousCharacters = dangerousString.split('');
+	const safeCharacters = dangerousCharacters.map(function (character) {
+		return encodedSymbolMap[character] || character;
+	});
+	const safeString = safeCharacters.join('');
+	return safeString;
+}
+
 const broadcast = async (user: typeof User | null, message: string, room: string, file: FileUpload | null | undefined = null) => {
 	// A second check before sending. TODO It should not be possible to hit this branch, remove other checks elsewhere?
 	if (message.trim() === '' && !file) {
@@ -65,7 +102,7 @@ const broadcast = async (user: typeof User | null, message: string, room: string
 			file.type = file.mimetype.substr(0, file.mimetype.indexOf('/'))
 			file.name = file.name
 			file.mimetype = file.mimetype
-			file.hrefImgId = ( file.type == "image" ? Math.random().toString(16) : "" )
+			file.hrefImgId = (file.type == "image" ? Math.random().toString(16) : "")
 		} else {
 			return false // File is present but one of it's attributes is missing
 		}
@@ -100,7 +137,7 @@ const broadcast = async (user: typeof User | null, message: string, room: string
 			if (iUser.handle !== postHandle) {
 				if (messageType !== 'system' && iUser.notifications == 'mentions') {
 					notify = message.includes(iUser.handle) ? true : undefined
-				} else if (iUser.notifications == 'always'){
+				} else if (iUser.notifications == 'always') {
 					notify = true
 				}
 			}
@@ -109,7 +146,7 @@ const broadcast = async (user: typeof User | null, message: string, room: string
 					handle: postHandle,
 					tripcode: postTrip,
 					messageType: messageType,
-					message: message,
+					message: wrapUrlsWithAnchorTags(escapeMarkup(message)),
 					notifications: notify,
 					inlineView: iUser.inlineView,
 					timestamp: new Date().toUTCString(),
@@ -155,7 +192,7 @@ let getUserByToken = (token: string) => {
 	return users.filter((user) => user.token === token)[0]
 }
 
-let getUserByHandle = (handle: string, room: string) => {
+const getUserByHandle = (handle: string, room: string) => {
 	let user = undefined
 	if (room) {
 		user = users.filter((user) => user.handle === handle && user.room === room)[0]
@@ -252,7 +289,7 @@ router.post("*", async (req: ZCRequest, res: Response, next: Function) => {
 		req.body.inlineView = (req.body.inlineView ? true : undefined)
 		req.body.theme = req.body.theme.trim()
 		req.body.notifications = req.body.notifications || DEFAULT_NOTIFICATIONS
-		
+
 		// Show error if theme is unknown
 		if (!ConfigSetup.isValidTheme(req.body.theme)) {
 			return res.render(VIEWS.LAYOUT, {
@@ -558,10 +595,10 @@ router.get(URL_PREFIX + ROUTES.CHAT_MESSAGES, (req: ZCRequest, res: Response, ne
 				tripcode: "",
 				messageType: "system",
 				message: "Users online: " +
-					users
+					escapeMarkup(users
 						.filter((iUser) => iUser.room === user.room)
 						.map((iUser) => iUser.handle)
-						.join(', '),
+						.join(', ')),
 				user: user,
 				timestamp: new Date().toUTCString()
 			},

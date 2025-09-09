@@ -1,10 +1,12 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
 	<title>ZeroChat</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" charset="utf-8">
 	<link rel='stylesheet' href='/stylesheets/normalize.css' />
+	<link rel="icon" href="/favicon.ico" type="image/png"/>
+	<link rel="apple-touch-icon" href="/favicon.ico">
 	<link rel='stylesheet' href='/stylesheets/base.css' />
 	<% if (typeof theme != "undefined" && locals.config.isValidTheme(theme)) { %>
 	<link rel='stylesheet' href='/themes/<%= theme %>.css' />
@@ -13,7 +15,9 @@
 	<% } else { %>
 	<link rel='stylesheet' href='/themes/<%= locals.config.DEFAULT_THEME %>.css' />
 	<% } %>
-	
+
+	<%- include('../templates/seo.html') %> 
+
 	<% if (typeof redirect != "undefined") { %>
 	<meta http-equiv="refresh" content="3; url=<%= redirect %>">
 	<% } %>

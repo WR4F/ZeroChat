@@ -28,7 +28,7 @@
 		</div>
 		<% } %>
 		<% if (typeof message != "undefined" && message != "") { %>
-			<span class="message-text"><%= message %></span>
+			<span class="message-text"><%- message %></span>
 		<% } %>
 	</div>
 	<% if (typeof notifications != "undefined") { %>
